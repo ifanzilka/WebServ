@@ -1,5 +1,6 @@
 a.out
 .vscode
+.idea/
 objs/
 dev_objs/
 webserv
