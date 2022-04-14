@@ -6,3 +6,4 @@ dev_objs/
 webserv
 webserv_dev
 *.log
+*.DS_Store
