@@ -4,6 +4,8 @@ namespace ft
 {
 	void ServerSelect::Init()
 	{
+		_id = 0;
+
 		/*
 			AF_UNIX, AF_LOCAL- Местная связь
 			AF_INET- Интернет-протоколы IPv4
@@ -20,8 +22,8 @@ namespace ft
 
 		/* Ip */
 		//TODO: check; Must be: server_info.sin_addr.s_addr = INADDR_ANY;
-//		_servaddr.sin_addr.s_addr = inet_addr(_ipaddr.c_str()); //127.0.0.1 or htonl(2130706433);
-		_servaddr.sin_addr.s_addr = INADDR_ANY;
+		//_servaddr.sin_addr.s_addr = inet_addr(_ipaddr.c_str()); //127.0.0.1 or htonl(2130706433);
+		_servaddr.sin_addr.s_addr = INADDR_ANY;//0.0.0.0
 		/* Создаю сокет */
 		Create_socket();
 
@@ -66,9 +68,7 @@ namespace ft
 
 	ServerSelect::~ServerSelect()
 	{
-		std::cout << RED;
-		std::cout << "Called (ServerSelect) Destructor\n";
-		std::cout << NORM;
+		std::cout << RED"Called (ServerSelect) Destructor"NORM << std::endl;
 	}
 
 	/**
@@ -103,11 +103,10 @@ namespace ft
 		// SERVER_TYPE macro SOCK_STREAM
 		_server_fd = socket(_servaddr.sin_family, SERVER_TYPE, 0);
 		//_server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	 	if (_server_fd < 0)
-		{
-		   ServerError("socket()");
-		   throw std::runtime_error("Server: Error in create socket\n");
-		}
+	 	
+		 if (_server_fd < 0)
+		   ServerError("Socket()");
+	
 		_max_fd = _server_fd;
 		
 		std::cout << GREEN << "Socket fd(" <<  _server_fd << ") successfully created ✅ " << NORM << "\n";
@@ -118,7 +117,7 @@ namespace ft
 	{
 		int yes = 1;
 		if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) < 0)
-			throw std::runtime_error("Server: setsockopt error\n");
+			ServerError("Setsokport");
 
 		/**
 
@@ -140,11 +139,10 @@ namespace ft
 	    
         */
         int bind_ = bind(_server_fd, (const struct sockaddr *)&_servaddr, sizeof(_servaddr));
-        if (bind_ < 0)
-        {
-            ServerError("bind()");
-		   	throw std::runtime_error("Server: Bind error\n");
-        }
+        
+		if (bind_ < 0)
+            ServerError("Bind: ");
+
 		std::cout << GREEN << "Success bind socket ✅ " << NORM << "\n";
 		return bind_;
 	}
@@ -170,10 +168,7 @@ namespace ft
         _listen = listen(_server_fd, MAX_CONNECT_LISTEN);
 
         if (_listen < 0)
-        {
 			ServerError("listen");
-			throw std::runtime_error("Server: Listen error\n");
-        }
 
 		std::cout << GREEN << "Server is listening connections... ✅ " << NORM << "\n";
 		return (_listen);
@@ -198,6 +193,7 @@ namespace ft
 			_writefds = _readfds = _currfds;
 
 			std::cout << BLUE << "Wait select..." << NORM << std::endl;
+			
 			/* Останавливаю процесс для отловки событий */
 			//_select = select(_max_fd + 1, &_readfds, &_writefds, NULL, NULL);
 			_select = select(_max_fd + 1, &_readfds, NULL, NULL, NULL);
@@ -211,8 +207,7 @@ namespace ft
 				}
 				else
 				{
-					ServerError("select");
-					throw "SelectError";
+					ServerError("Select");
 				}
 			}
 			else if (_select == 0)
@@ -251,6 +246,59 @@ namespace ft
 
 	}
 
+	void ServerSelect::PrintAllClients()
+	{
+		std::map<int, int>::iterator i;
+		std::map<int, int>::iterator end;
+
+
+		if (_clients_fd.size() == 0)
+
+		std::cout << PURPLE << "Clients List: "NORM << std::endl;
+
+		if (_clients_fd.size() == 0)
+		{
+			std::cout << "Empty\n";
+			return ;
+		}
+
+		i = _clients_fd.begin();
+		end = _clients_fd.end();
+		while (i != end)
+		{
+			std::cout << "Fd: " << (*i).first << " Id: " << (*i).second << std::endl;
+			i++;
+		}
+
+	}
+
+	void ServerSelect::AddClient(int client_fd)
+	{
+		/* Добавляю во множество */
+		FD_SET(client_fd, &_currfds);
+
+		_clients_fd.insert(std::make_pair(client_fd, _id));
+		_id++;
+
+		_max_fd = client_fd > _max_fd ? client_fd : _max_fd;
+	}
+
+	void ServerSelect::DeleteClient(int client_fd)
+	{
+		std::map<int,int>::iterator		tmp;
+		
+		/* Удаляю из множества */
+		FD_CLR(client_fd, &_currfds);
+
+		tmp = _clients_fd.find(client_fd);
+		if (tmp != _clients_fd.end())
+		{
+			_clients_fd.erase(tmp);
+		}
+
+	}
+
+
 	void ServerSelect::CheckListen()
 	{
 		struct sockaddr_in	clientaddr;
@@ -265,65 +313,70 @@ namespace ft
 		{
 			client_fd = accept(_server_fd,(struct sockaddr *)&clientaddr, &len);
 			if (client_fd == -1)
-			{
-				ServerError("accept");
-				throw "AcceptError";
-			}
+				ServerError("Accept");
+
+
 			printf(GREEN"New connection fd:%d✅ "NORM"\n", client_fd);
 			PrintClientInfo(&clientaddr);
 			
-			/* Добавляю во множество */
-			FD_SET(client_fd, &_currfds);
-			_max_fd = client_fd > _max_fd ? client_fd : _max_fd;
-
+			AddClient(client_fd);
+			
 			//TODO Добавить в массив информацию о клиенте
 		}
 	}
 
 	void ServerSelect::CheckRead()
-	{
-		ssize_t		size;
-		ssize_t		ret;
-		char		buffer[1024];
-		int i;
+	{		
+		std::map<int, int>::iterator		 			it_begin;
+		std::map<int, int>::iterator		 			it_end;
 
-		i = 0;
 
-		std::cout << BLUE"Check read"NORM"\n";
+		it_begin = _clients_fd.begin();
+		it_end = _clients_fd.end();
+
+		std::cout << BLUE"Check read"NORM << std::endl;
+		
 		/* Проверяю дескрипторы на то что пришло ли что то чтение */
-		while (i <= _max_fd)
+		while (it_begin != it_end)
 		{
-			/* Сокет для прослушки скипаю */
-			if (i == _server_fd)
-			{	
-				i++;
-				continue;
-			}
-
 			/* message receives from curr_cli */
-			if (FD_ISSET(i, &_readfds))
+			if (FD_ISSET((*it_begin).first, &_readfds))
 			{
-				std::cout << GREEN << "Listen signal fd(" << i << ") ✅ " << NORM << "\n";
-				ret = recv(i, buffer, 1024 - 1, 0);
-				if (ret == 0)
-				{	
-					std::cout << RED << "Disconnect fd(" <<  i << ") ❌ " << NORM << std::endl;
-
-					/* Удаляю из множества */
-					FD_CLR(i, &_currfds);
-				}
-				else
-				{
-					//ReadFd(fd1);
-					printf("Listen msg in fd(%d)\n", i);
-					buffer[ret] = 0;
-					write(1, buffer, ret);
-					
-					/* Отправляю в ответ то что все хорошо пришло */
-					send(i, "Message has send successfully\n", strlen("Message has send successfully\n"), 0);
-				}
+				ReadFd((*it_begin).first);
+				return;
 			}
-			i++;
+			it_begin++;
+		}
+	}
+
+	void ServerSelect::ReadFd(int clinet_fd)
+	{
+		ssize_t		ret;
+		char		buffer[BUFFER_SIZE];
+
+		std::cout << GREEN << "Listen signal fd(" << clinet_fd << ") ✅ " << NORM << "\n";
+		ret = recv(clinet_fd, buffer, BUFFER_SIZE - 1, 0);
+
+		if (ret == 0)
+		{	
+			PrintAllClients();
+			std::cout << RED << "Disconnect fd(" <<  clinet_fd << ") ❌ " << NORM << std::endl;
+			
+			DeleteClient(clinet_fd);
+			PrintAllClients();
+
+		}
+		else
+		{
+
+			printf("Listen msg in fd(%d)\n", clinet_fd);	
+			buffer[ret] = 0;
+			write(1, buffer, ret);
+
+			/* Отправляю в ответ то что все хорошо пришло */
+			send(clinet_fd, "Message has send successfully\n", strlen("Message has send successfully\n"), 0);
+
+			//HttpParser
 		}
 	}
 
@@ -332,7 +385,7 @@ namespace ft
 		int i;
 
 		i = 0;
-		std::cout << BLUE"Check Write"NORM"\n"; //когда нажал ентер
+		std::cout << BLUE"Check Write"NORM << std::endl; //когда нажал ентер
 		while (i <= _max_fd)
 		{
 			/* Сокет для прослушки скипаю */
@@ -367,9 +420,21 @@ namespace ft
 
 	void ServerSelect::ServerError(const char *s)
 	{
-		std::cout << RED << std::endl;
-		perror(s);
-		std::cout << NORM << "\n";
+		//perror(s);
+
+		char *str_error =  strerror(errno);
+		std::string		err(str_error);	
+		std::string 	error_type(s);
+		
+		std::string 	full = "";
+
+		/* Example: select: Bad decriptor */
+		full += error_type;
+		full += ": ";
+		full += err;
+
+		std::cerr << RED << full << NORM << "\n";
+		//throw std::runtime_error(full);
 		exit(42);
 	}
 

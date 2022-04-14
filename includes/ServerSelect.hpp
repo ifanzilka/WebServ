@@ -12,11 +12,14 @@
 
 #include <iostream> /* string */
 #include <vector>	/* vector */
+#include <map>		/* map	*/
 #include <unistd.h> /* write */
 
-#define SERVER_PROTOCOL 	AF_INET //IpV4
+#define SERVER_PROTOCOL 	AF_INET 	//IpV4
 #define	SERVER_TYPE			SOCK_STREAM //TCP
-#define MAX_CONNECT_LISTEN 	15
+#define MAX_CONNECT_LISTEN 	15			//In Listen
+#define	BUFFER_SIZE			1024		//In Read Buffer
+
 
 namespace ft
 {
@@ -26,9 +29,7 @@ namespace ft
 
 		/* Constructors */
 
-		//basik in localhost
 		ServerSelect(int port);
-		//with ipaddr
 		ServerSelect(std::string &ipaddr, int port);
 		ServerSelect(const char *ipaddr, int port);
 
@@ -41,13 +42,14 @@ namespace ft
 		/* Настройка моей сети */
 		struct sockaddr_in 	_servaddr;
 		std::string 		_ipaddr;
-		std::vector<int>	_clinets;
+		
+		/* Fd and id clients */
+		std::map<int, int>	_clients_fd;
 		
 		int 				_port;
 		int 				_server_fd;
 		int					_max_fd;
-
-
+		int					_id;
 
 		/* For select */
 		fd_set				_currfds;
@@ -73,6 +75,12 @@ namespace ft
 		void	CheckRead();
 		void 	CheckWrite();
 
+		void 	ReadFd(int clinet_fd);
+
+
+		void	AddClient(int fd);
+		void 	DeleteClient(int fd);
+		void 	PrintAllClients();
 
 	};
 }
