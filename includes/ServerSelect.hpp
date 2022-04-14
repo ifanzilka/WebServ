@@ -56,7 +56,7 @@ namespace ft
 
 
 		void 	PrintIpPort();
-		void 	PrintClintInfo(struct sockaddr_in *info);
+		void 	PrintClientInfo(struct sockaddr_in *info);
 		
 		/* Print Errno */
 		void	ServerError(const char *s);
@@ -64,7 +64,7 @@ namespace ft
 		
 		void 	Init();
 		int		Create_socket();
-		int 	Binded();
+		int 	Bind();
 		int 	Listen();
 
 		/* Events */
