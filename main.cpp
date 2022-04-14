@@ -13,6 +13,8 @@
 #define SERVER_PORT    "8000"
 #define MAX_CONNECTION 10
 
+#include "../includes/Messenger.hpp"
+
 int main()
 {
 	int sock_fd;
@@ -40,10 +42,11 @@ int main()
 	inet_ntop(AF_INET, &(server_info.sin_addr), ip, INET_ADDRSTRLEN);
 	printf("Server %s:%d is listening...\n", ip, atoi(SERVER_PORT));
 
-
 	while (1)
 	{
+		ft::Messenger *parser;
 		int connect_fd;
+		int rv;
 
 		socklen_t addr_len = sizeof(server_info);
 		connect_fd = accept(sock_fd, (struct sockaddr *) &server_info, &addr_len);
@@ -53,20 +56,8 @@ int main()
 		}
 		printf("A new connection with fd %d has been accepted\n", connect_fd);
 
-		char client_buff[1024];
-		int		byte_readed;
-
-			byte_readed = read(connect_fd, client_buff, 1024);
-			client_buff[byte_readed] = '\0';
-			printf("%s\n", client_buff);
-
-		int byte_wrote;
-
-		std::string	header("HTTP/1.1 200 OK\nContent-Type: text\nContent-Length: ");
-		std::string body = "<iframe width=\"1200\" height=\"800\"\nsrc=https://www.youtube.com/embed/YXna1vdzg1c?mute=1&amp;autoplay=1>\n</iframe>";
-		header += body.length();
-		header += "\n\n";
-		byte_wrote = write(connect_fd, header.c_str(), header.size());
-		byte_wrote = write(connect_fd, body.c_str(), body.length());
+		parser = new ft::Messenger(connect_fd);
+		parser->GetRequest(connect_fd);
+		delete parser;
 	}
 }
