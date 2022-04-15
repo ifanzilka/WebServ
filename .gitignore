@@ -7,3 +7,4 @@ webserv
 webserv_dev
 *.log
 *.DS_Store
+*.txt

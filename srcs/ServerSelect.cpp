@@ -37,6 +37,7 @@ namespace ft
 
 	ServerSelect::~ServerSelect()
 	{
+		Logger("ServerSelect Destructor call🔴");
 		std::cout << RED"Called (ServerSelect) Destructor"NORM << std::endl;
 	}
 
@@ -64,13 +65,14 @@ namespace ft
 			/* Множества приравниваю */
 			_writefds = _readfds = _currfds;
 
-			std::cout << BLUE << "Wait select..." << NORM << std::endl;
 			
+			Logger(BLUE, "Wait select...");
+
 			/* Останавливаю процесс для отловки событий */
-			//_select = select(_max_fd + 1, &_readfds, &_writefds, NULL, NULL);
 			_select = select(_max_fd + 1, &_readfds, NULL, NULL, NULL);
-			
-			std::cout << "Select signal is " << _select << std::endl;
+			 
+			Logger(B_GRAY, "Select signal is " + std::to_string(_select));
+		
 			if (_select == -1)
 			{
 				if (errno == EINTR)
@@ -101,7 +103,7 @@ namespace ft
 	void ServerSelect::EventsCheck()
 	{
 		/* Проверяю пришло ли кто на прослушку */
-		CheckListen();
+		CheckAccept();
 	
 		/* Проверяю дескрипторы на чтение */
 		CheckRead();
@@ -113,6 +115,9 @@ namespace ft
 
 	void ServerSelect::AddFd(int fd)
 	{
+		Logger(B_GRAY, "Add fd " + std::to_string(fd));
+		fcntl(fd, F_SETFL, O_NONBLOCK);
+		
 		/* Добавляю во множество */
 		FD_SET(fd, &_currfds);
 
@@ -125,6 +130,8 @@ namespace ft
 
 	void ServerSelect::RemoteFd(int fd)
 	{
+		Logger(B_GRAY, "Remote fd " + std::to_string(fd));
+		
 		std::map<int,int>::iterator		tmp;
 		
 		/* Удаляю из множества */
@@ -163,14 +170,15 @@ namespace ft
 
 	}
 
-	void ServerSelect::CheckListen()
+	void ServerSelect::CheckAccept()
 	{
+		Logger(BLUE, "Check Accept...");
+
 		struct sockaddr_in	clientaddr;
 		socklen_t 			len;
 		int 				client_fd;
 
 		len = sizeof(clientaddr);
-		std::cout << BLUE"Check Listen"NORM"\n";
 		
 		/* Если пришло событие на connect */
 		if (FD_ISSET(_server_fd, &_readfds))
@@ -179,18 +187,18 @@ namespace ft
 			if (client_fd == -1)
 				AbstractServerApi::ServerError("Accept");
 
-
-			printf(GREEN"New connection fd:%d✅ "NORM"\n", client_fd);
-			PrintClientInfo(&clientaddr);
+			Logger(GREEN, "New connection fd: " + std::to_string(client_fd) + " ✅");
 			
+			PrintSockaddrInfo(&clientaddr);
 			AddFd(client_fd);
-			
 			//TODO Добавить в массив информацию о клиенте
 		}
 	}
 
 	void ServerSelect::CheckRead()
-	{		
+	{
+		Logger(BLUE, "Check read...");
+
 		std::map<int, int>::iterator	it_begin;
 		std::map<int, int>::iterator	it_end;
 
@@ -198,8 +206,8 @@ namespace ft
 		it_begin = _clients_fd.begin();
 		it_end = _clients_fd.end();
 
-		std::cout << BLUE"Check read"NORM << std::endl;
 		
+
 		/* Проверяю дескрипторы на то что пришло ли что то чтение */
 		while (it_begin != it_end)
 		{
@@ -213,73 +221,45 @@ namespace ft
 		}
 	}
 
-	void ServerSelect::ReadFd(int clinet_fd)
+	void ServerSelect::ReadFd(int fd)
 	{
-		ssize_t		ret;
-		char		buffer[BUFFER_SIZE];
-
-		std::cout << GREEN << "Listen signal fd(" << clinet_fd << ") ✅ " << NORM << "\n";
-		ret = recv(clinet_fd, buffer, BUFFER_SIZE - 1, 0);
-
+		Logger(GREEN, "Readble is ready: fd(" + std::to_string(fd) + ") ✅");
+		
+		char buffer[BUFFER_SIZE];
+		std::string full_msg ="";
+		bzero(buffer, BUFFER_SIZE);
+		
+		int ret = recv(fd, buffer, BUFFER_SIZE - 1, 0);
 		if (ret == 0)
-		{	
+		{
 			PrintAllClients();
-			std::cout << RED << "Disconnect fd(" <<  clinet_fd << ") ❌ " << NORM << std::endl;
-			
-			RemoteFd(clinet_fd);
+			Logger(RED, "Disconnect  fd(" + std::to_string(fd) + ") ❌ ");
+			RemoteFd(fd);
 			PrintAllClients();
+			return;
 
 		}
-		else
+		full_msg[ret] = 0;
+		full_msg += buffer;
+		
+		Logger(PURPLE, "Recv read " + std::to_string(ret) + " bytes");
+		Logger(B_GRAY, "buf:" + full_msg);
+		while (ret == BUFFER_SIZE - 1)
 		{
-
-			printf("Listen msg in fd(%d)\n", clinet_fd);	
+			ret = recv(fd, buffer, BUFFER_SIZE - 1, 0);
+			if (ret == -1)
+				break;
+			
 			buffer[ret] = 0;
-			write(1, buffer, ret);
-
-			/* Отправляю в ответ то что все хорошо пришло */
-			send(clinet_fd, "Message has send successfully\n", strlen("Message has send successfully\n"), 0);
-
-			//HttpParser
+			full_msg += buffer;
+			Logger(B_GRAY, "subbuf:" + std::string(buffer));
+			Logger(PURPLE, "Replay Recv read " + std::to_string(ret) + " bytes");
 		}
+		//full_msg.pop_back();
+
+		Logger(GREEN, "Data is read is " + std::to_string(full_msg.size()) + " bytes  ✅");
+		Logger(B_GRAY, full_msg);
+		send(fd, "Message has send successfully\n", strlen("Message has send successfully\n"), 0);
 	}
 
-	void ServerSelect::CheckWrite()
-	{
-		int i;
-
-		i = 0;
-		std::cout << BLUE"Check Write"NORM << std::endl; //когда нажал ентер
-		while (i <= _max_fd)
-		{
-			/* Сокет для прослушки скипаю */
-			if (i == _server_fd)
-			{	
-				i++;
-				continue;
-			}
-			
-			if (FD_ISSET(i, &_readfds))
-			{
-				std::cout << "Write wait its: " << i << std::endl;
-				write(i, "I am writing for you\n", strlen("I am writing for you\n"));
-				//while (1)
-				//	;
-			}
-			i++;
-		}
-	}
-
-	void ServerSelect::PrintClientInfo(struct sockaddr_in *info)
-	{
-		char ip4[INET_ADDRSTRLEN]; // место для строки IPv4
-		int port;
-	
-		port =  ntohs(info->sin_port); 
-		//заполнили ip
-		inet_ntop(AF_INET, &(info->sin_addr), ip4, INET_ADDRSTRLEN);
-		printf(PURPLE"New client IPv4 address is: %s:%d"NORM"\n", ip4, port);
-	}
 }
-
-
