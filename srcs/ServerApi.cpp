@@ -1,5 +1,6 @@
 #include "../includes/ServerApi.hpp"
 
+
 namespace ft
 {
 	void AbstractServerApi::Init(std::string& ipaddr, int port)
@@ -26,7 +27,9 @@ namespace ft
 		/* Ip */
 		//TODO: check; Must be: server_info.sin_addr.s_addr = INADDR_ANY;
 		//_servaddr.sin_addr.s_addr = inet_addr(_ipaddr.c_str()); //127.0.0.1 or htonl(2130706433);
-		_servaddr.sin_addr.s_addr = INADDR_ANY;//0.0.0.0
+		//_servaddr.sin_addr.s_addr = INADDR_ANY;//0.0.0.0
+		_servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
 		/* Создаю сокет */
 		Create_socket();
 
@@ -35,6 +38,25 @@ namespace ft
 
 		/* Делаю сокет прослушивающим */
 		Listen();
+
+		#ifdef LOGGER_ENABLE
+			std::string 	ports = std::to_string(_port);
+			std::string		log_file_name = "";
+
+			log_file_name += _ipaddr;
+			log_file_name += "_";
+			log_file_name += ports;
+			log_file_name += "_log.txt";
+			_logs.open(log_file_name, std::ios::ate);
+			Logger(std::string("Init Server!"));
+		#endif
+
+		// _fd_log_file = open(log_file_name.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0655);
+		// if (_fd_log_file < 0)
+		// 	ServerError("LogFile");
+		// write(_fd_log_file, "Hello\n", 7);
+		//_logs.close();
+
 	}
 
 	int AbstractServerApi::Create_socket()
@@ -137,6 +159,55 @@ namespace ft
 		std::cout << "Port: " << _port << NORM << "\n";
 	}
 
+	void AbstractServerApi::Logger(std::string msg)
+	{
+		char buffer[80];
+		time_t seconds = time(NULL);
+		tm* timeinfo = localtime(&seconds);
+
+		_logs << "[";
+		_logs << std::put_time(timeinfo, "%d") << " ";
+		_logs << std::put_time(timeinfo, "%b") << " ";
+		_logs << std::put_time(timeinfo, "%Y") << " ";
+		_logs << std::put_time(timeinfo, "%I") << ":";
+		_logs << std::put_time(timeinfo, "%M") << ":";
+		_logs << std::put_time(timeinfo, "%S") << "]: ";
+
+		_logs << msg << std::endl;
+	}
+
+	void AbstractServerApi::Logger(std::string color,std::string msg)
+	{
+		#ifdef LOGGER_ENABLE
+
+		char buffer[80];
+		time_t seconds = time(NULL);
+		tm* timeinfo = localtime(&seconds);
+
+		_logs << "[";
+		_logs << std::put_time(timeinfo, "%d") << " ";
+		_logs << std::put_time(timeinfo, "%b") << " ";
+		_logs << std::put_time(timeinfo, "%Y") << " ";
+		_logs << std::put_time(timeinfo, "%I") << ":";
+		_logs << std::put_time(timeinfo, "%M") << ":";
+		_logs << std::put_time(timeinfo, "%S") << "]: ";
+		_logs << msg << std::endl;
+		std::cout << color << msg << NORM <<std::endl;
+
+		#endif
+	}
+
+	void AbstractServerApi::PrintSockaddrInfo(struct sockaddr_in *info)
+	{
+		char ip4[INET_ADDRSTRLEN]; // место для строки IPv4
+		int port;
+	
+		port =  ntohs(info->sin_port); 
+		
+		inet_ntop(AF_INET, &(info->sin_addr), ip4, INET_ADDRSTRLEN);//заполнили ip
+		//Logger(PURPLE,"IPv4 address is: " + std::string(ip4) + std::to_string(port));
+		printf(PURPLE"IPv4 address is: %s:%d"NORM"\n", ip4, port);
+	}
 
 	void AbstractServerApi::ServerError(const char *s)
 	{
@@ -152,6 +223,7 @@ namespace ft
 		full += ": ";
 		full += err;
 
+		Logger(full);
 		std::cerr << RED << full << NORM << "\n";
 		//throw std::runtime_error(full);
 		exit(42);

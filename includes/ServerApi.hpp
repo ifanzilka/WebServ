@@ -6,7 +6,7 @@
 /*   By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/14 00:49:56 by bmarilli          #+#    #+#             */
-/*   Updated: 2022/04/15 17:51:23 by bmarilli         ###   ########.fr       */
+/*   Updated: 2022/04/16 01:45:26 by bmarilli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,22 @@
 #include <arpa/inet.h>	/* inet_addr inet_htop */
 #include <sys/socket.h>	/* socket */
 #include <errno.h>		/* errno */
+#include <fcntl.h>		/* open */
+#include <unistd.h>		/* write */
+#include <fcntl.h>		/* fcntl */
+
+#include <fstream>
 #include <iostream>		/* std cout */
+#include <ctime>		/* time */
 
 
 #define SERVER_PROTOCOL 	AF_INET 	//IpV4
 #define	SERVER_TYPE			SOCK_STREAM //TCP
 #define MAX_CONNECT_LISTEN 	15			//In Listen
-#define	BUFFER_SIZE			1024		//In Read Buffer
+#define	BUFFER_SIZE			2		//In Read Buffer !!!!( > 2)
 
+#define LOGGER_ENABLE		0			//1 - ON, 0 - OFF
+				
 
 namespace ft
 {
@@ -36,13 +44,16 @@ namespace ft
 	
 		virtual	void 	Start() = 0;
 		
-    	
+    	static void 	PrintSockaddrInfo(struct sockaddr_in *info);
 	protected:
 		/* Настройка моей сети */
 		struct sockaddr_in 	_servaddr;
 		std::string 		_ipaddr;
+		std::ofstream 		_logs;
 		int 				_port;
 		int 				_server_fd;
+		int					_fd_log_file;
+		
 
 		/* Говорю что можно переопределить*/
 		virtual	void	Init(std::string& ipaddr, int port);
@@ -52,11 +63,13 @@ namespace ft
 
 		/* Functional */
 		virtual void	AddFd(int fd) = 0;
-		virtual void	RemoteFd(int fd) = 0;
+		//virtual void	RemoteFd(int fd) = 0;
 
 		/* Print Errno */
 		virtual	void	ServerError(const char *s);
-	
+		void 			Logger(std::string msg);
+		void			Logger(std::string color,std::string msg);
+
 	private:
 		void 			PrintIpPort();
 
