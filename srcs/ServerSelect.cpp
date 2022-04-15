@@ -2,38 +2,6 @@
 
 namespace ft
 {
-	void ServerSelect::Init()
-	{
-		_id = 0;
-
-		/*
-			AF_UNIX, AF_LOCAL- Местная связь
-			AF_INET- Интернет-протоколы IPv4
-			AF_INET6- Интернет-протоколы IPv6
-			AF_IPX- протоколы IPX Novell
-		*/
-		bzero(&_servaddr, sizeof(_servaddr));
-
-		_servaddr.sin_family = SERVER_PROTOCOL;
-
-		/* Port host to network short  */
-		_servaddr.sin_port = htons(_port);
-		/* преобразовать номер порта из порядка байтов хоста */
-
-		/* Ip */
-		//TODO: check; Must be: server_info.sin_addr.s_addr = INADDR_ANY;
-		//_servaddr.sin_addr.s_addr = inet_addr(_ipaddr.c_str()); //127.0.0.1 or htonl(2130706433);
-		_servaddr.sin_addr.s_addr = INADDR_ANY;//0.0.0.0
-		/* Создаю сокет */
-		Create_socket();
-
-		/* Связываю его с адресом и портом*/
-		Bind();
-
-		/* Делаю сокет прослушивающим */
-		Listen();
-
-	}
 
 	/**
 	==============================================
@@ -41,29 +9,30 @@ namespace ft
 	==============================================
 	*/
 
-	ServerSelect::ServerSelect(int port)
+	void ServerSelect::Init_Serv()
 	{
-		_ipaddr = "127.0.0.1";
-		_port = port;
-		PrintIpPort();
-		Init();
+		_id = 0;
+		_max_fd = _server_fd;
 	}
 
+	ServerSelect::ServerSelect(int port)
+	{
+		std::string tmp = "127.0.0.1";
+		AbstractServerApi::Init(tmp, port);
+		Init_Serv();
+	}
 
 	ServerSelect::ServerSelect(std::string& ipaddr, int port)
 	{
-		_ipaddr = ipaddr;
-		_port = port;
-		PrintIpPort();
-		Init();
+		AbstractServerApi::Init(ipaddr, port);
+		Init_Serv();
 	}
 
 	ServerSelect::ServerSelect(const char *ipaddr, int port)
 	{
-		_ipaddr = std::string(ipaddr);
-		_port = port;
-		PrintIpPort();
-		Init();
+		std::string tmp = std::string(ipaddr);;
+		AbstractServerApi::Init(tmp, port);
+		Init_Serv();
 	}
 
 	ServerSelect::~ServerSelect()
@@ -76,103 +45,6 @@ namespace ft
 	==               StartUp methods            ==
 	==============================================
 	*/
-
-	int ServerSelect::Create_socket()
-	{
-		/**
-            int	socket(int domain, int type, int protocol);
-            (0) domain:
-            AF_UNIX, AF_LOCAL- Местная связь
-            AF_INET- Интернет-протоколы IPv4
-            AF_INET6- Интернет-протоколы IPv6
-            AF_IPX- протоколы IPX Novell
-
-            (1) type:
-            type указывает, будет ли связь бесконтактной или постоянной.
-            Не все types совместимы со всеми domains. Некоторые примеры:
-
-            SOCK_STREAM- Двусторонняя надежная связь (TCP)
-            SOCK_DGRAM- Без установления соединения, ненадежный (UDP)
-
-            (2) protocol:
-            Обычно для каждого protocol'a доступно только одно значение type,
-            поэтому можно использовать значение '0'.
-	    */
-
-		//_server_fd = socket(_servaddr.sin_family, SOCK_STREAM, 0);
-		// SERVER_TYPE macro SOCK_STREAM
-		_server_fd = socket(_servaddr.sin_family, SERVER_TYPE, 0);
-		//_server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	 	
-		 if (_server_fd < 0)
-		   ServerError("Socket()");
-	
-		_max_fd = _server_fd;
-		
-		std::cout << GREEN << "Socket fd(" <<  _server_fd << ") successfully created ✅ " << NORM << "\n";
-		return (_server_fd);
-	}
-
-	int ServerSelect::Bind()
-	{
-		int yes = 1;
-		if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) < 0)
-			ServerError("Setsokport");
-
-		/**
-
-        Когда у нас есть сокет, нам нужно использовать привязку, чтобы назначить IP-адрес и порт сокету
-        Создаю имя для сокета (потому нужен unlink )
-        
-        int bind(int sockfd, const sockaddr *addr, socklen_t addrlen);
-        (0) sockfd:
-        sockfd относится к файловому дескриптору, которому мы хотим присвоить адрес.
-        Для нас это будет файловый дескриптор, возвращаемый socket().
-
-        (1) addr:
-        addr - структура, используемая для указания адреса, который мы хотим присвоить сокету.
-        Точная структура, которую необходимо использовать для определения адреса, зависит от протокола.
-        Поскольку мы собираемся использовать IP для этого сервера, мы будем использовать sockaddr_in
-
-        (2) addrlen
-        addrlen - просто size() из addr.
-	    
-        */
-        int bind_ = bind(_server_fd, (const struct sockaddr *)&_servaddr, sizeof(_servaddr));
-        
-		if (bind_ < 0)
-            ServerError("Bind: ");
-
-		std::cout << GREEN << "Success bind socket ✅ " << NORM << "\n";
-		return bind_;
-	}
-
-	int ServerSelect::Listen()
-	{
-		int _listen;
-
-
-		/**
-            listen помечает сокет как пассивный. т.е. сокет будет использоваться для приема соединений.
-            
-            Функция listen используется сервером, чтобы информировать ОС,
-            что он ожидает ("слушает") запросы связи на данном сокете
-            
-            int listen(int socket_fd, int backlog);
-                sockfd - файловый дескриптор сокета.
-
-                backlog - максимальное количество подключений, которые будут поставлены в очередь,
-                прежде чем в подключениях будет отказано.
-        */
-        
-        _listen = listen(_server_fd, MAX_CONNECT_LISTEN);
-
-        if (_listen < 0)
-			ServerError("listen");
-
-		std::cout << GREEN << "Server is listening connections... ✅ " << NORM << "\n";
-		return (_listen);
-	}
 
 	void ServerSelect::Start()
 	{
@@ -207,7 +79,7 @@ namespace ft
 				}
 				else
 				{
-					ServerError("Select");
+					AbstractServerApi::ServerError("Select");
 				}
 			}
 			else if (_select == 0)
@@ -225,12 +97,6 @@ namespace ft
 			
 	}
 
-	void ServerSelect::PrintIpPort()
-	{
-		std::cout << PURPLE;
-		std::cout << "Ip address: " << _ipaddr << "\n";
-		std::cout << "Port: " << _port << NORM << "\n";
-	}
 
 	void ServerSelect::EventsCheck()
 	{
@@ -238,12 +104,37 @@ namespace ft
 		CheckListen();
 	
 		/* Проверяю дескрипторы на чтение */
-
 		CheckRead();
 
 		/* Проверяю на запись */
 		//CheckWrite();
 
+	}
+
+	void ServerSelect::AddFd(int fd)
+	{
+		/* Добавляю во множество */
+		FD_SET(fd, &_currfds);
+
+		_clients_fd.insert(std::make_pair(fd, _id));
+		_id++;
+
+		//for select
+		_max_fd = fd > _max_fd ? fd : _max_fd;
+	}
+
+	void ServerSelect::RemoteFd(int fd)
+	{
+		std::map<int,int>::iterator		tmp;
+		
+		/* Удаляю из множества */
+		FD_CLR(fd, &_currfds);
+
+		tmp = _clients_fd.find(fd);
+		if (tmp != _clients_fd.end())
+		{
+			_clients_fd.erase(tmp);
+		}
 	}
 
 	void ServerSelect::PrintAllClients()
@@ -272,33 +163,6 @@ namespace ft
 
 	}
 
-	void ServerSelect::AddClient(int client_fd)
-	{
-		/* Добавляю во множество */
-		FD_SET(client_fd, &_currfds);
-
-		_clients_fd.insert(std::make_pair(client_fd, _id));
-		_id++;
-
-		_max_fd = client_fd > _max_fd ? client_fd : _max_fd;
-	}
-
-	void ServerSelect::DeleteClient(int client_fd)
-	{
-		std::map<int,int>::iterator		tmp;
-		
-		/* Удаляю из множества */
-		FD_CLR(client_fd, &_currfds);
-
-		tmp = _clients_fd.find(client_fd);
-		if (tmp != _clients_fd.end())
-		{
-			_clients_fd.erase(tmp);
-		}
-
-	}
-
-
 	void ServerSelect::CheckListen()
 	{
 		struct sockaddr_in	clientaddr;
@@ -313,13 +177,13 @@ namespace ft
 		{
 			client_fd = accept(_server_fd,(struct sockaddr *)&clientaddr, &len);
 			if (client_fd == -1)
-				ServerError("Accept");
+				AbstractServerApi::ServerError("Accept");
 
 
 			printf(GREEN"New connection fd:%d✅ "NORM"\n", client_fd);
 			PrintClientInfo(&clientaddr);
 			
-			AddClient(client_fd);
+			AddFd(client_fd);
 			
 			//TODO Добавить в массив информацию о клиенте
 		}
@@ -327,8 +191,8 @@ namespace ft
 
 	void ServerSelect::CheckRead()
 	{		
-		std::map<int, int>::iterator		 			it_begin;
-		std::map<int, int>::iterator		 			it_end;
+		std::map<int, int>::iterator	it_begin;
+		std::map<int, int>::iterator	it_end;
 
 
 		it_begin = _clients_fd.begin();
@@ -362,7 +226,7 @@ namespace ft
 			PrintAllClients();
 			std::cout << RED << "Disconnect fd(" <<  clinet_fd << ") ❌ " << NORM << std::endl;
 			
-			DeleteClient(clinet_fd);
+			RemoteFd(clinet_fd);
 			PrintAllClients();
 
 		}
@@ -402,7 +266,6 @@ namespace ft
 				//while (1)
 				//	;
 			}
-
 			i++;
 		}
 	}
@@ -415,29 +278,8 @@ namespace ft
 		port =  ntohs(info->sin_port); 
 		//заполнили ip
 		inet_ntop(AF_INET, &(info->sin_addr), ip4, INET_ADDRSTRLEN);
-		printf(PURPLE"The IPv4 address is: %s:%d"NORM"\n", ip4, port);
+		printf(PURPLE"New client IPv4 address is: %s:%d"NORM"\n", ip4, port);
 	}
-
-	void ServerSelect::ServerError(const char *s)
-	{
-		//perror(s);
-
-		char *str_error =  strerror(errno);
-		std::string		err(str_error);	
-		std::string 	error_type(s);
-		
-		std::string 	full = "";
-
-		/* Example: select: Bad decriptor */
-		full += error_type;
-		full += ": ";
-		full += err;
-
-		std::cerr << RED << full << NORM << "\n";
-		//throw std::runtime_error(full);
-		exit(42);
-	}
-
 }
 
 

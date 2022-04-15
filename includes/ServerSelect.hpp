@@ -23,7 +23,7 @@
 
 namespace ft
 {
-	class ServerSelect//: public AbstractServerApi
+	class ServerSelect: public AbstractServerApi
 	{
 	public:
 
@@ -40,14 +40,15 @@ namespace ft
 	
 	private:
 		/* Настройка моей сети */
-		struct sockaddr_in 	_servaddr;
-		std::string 		_ipaddr;
-		
+		// struct sockaddr_in 	_servaddr;
+		// std::string 		_ipaddr;
+		// int 				_port;
+		// int 				_server_fd;
+
 		/* Fd and id clients */
 		std::map<int, int>	_clients_fd;
 		
-		int 				_port;
-		int 				_server_fd;
+
 		int					_max_fd;
 		int					_id;
 
@@ -57,17 +58,9 @@ namespace ft
 		fd_set 				_readfds;
 
 
-		void 	PrintIpPort();
 		void 	PrintClientInfo(struct sockaddr_in *info);
 		
-		/* Print Errno */
-		void	ServerError(const char *s);
-		
-		
-		void 	Init();
-		int		Create_socket();
-		int 	Bind();
-		int 	Listen();
+		void 	Init_Serv();
 
 		/* Events */
 		void 	EventsCheck();
@@ -75,11 +68,12 @@ namespace ft
 		void	CheckRead();
 		void 	CheckWrite();
 
+		void	AddFd(int client_fd);
+		void	RemoteFd(int client_fd);
+		
+
+		
 		void 	ReadFd(int clinet_fd);
-
-
-		void	AddClient(int fd);
-		void 	DeleteClient(int fd);
 		void 	PrintAllClients();
 
 	};

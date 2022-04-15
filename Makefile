@@ -6,7 +6,7 @@
 #    By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/04/13 20:44:46 by bmarilli          #+#    #+#              #
-#    Updated: 2022/04/14 17:34:06 by bmarilli         ###   ########.fr        #
+#    Updated: 2022/04/15 17:10:19 by bmarilli         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,6 +36,6 @@ _CYAN=	$'\033[36m
 _WHITE=	$'\033[37m
 
 all:			$(NAME)
-	clang++ -Iincludes srcs/ServerSelect.cpp main2.cpp
+	clang++ -Iincludes srcs/ServerApi.cpp srcs/ServerSelect.cpp  main2.cpp
 
 $(NAME): 		$(INC_DIR) $(OBJ)
