@@ -13,7 +13,7 @@
 #define SERVER_PORT    "8000"
 #define MAX_CONNECTION 10
 
-#include "../includes/Messenger.hpp"
+#include "./includes/Messenger.hpp"
 
 int main()
 {
@@ -42,22 +42,36 @@ int main()
 	inet_ntop(AF_INET, &(server_info.sin_addr), ip, INET_ADDRSTRLEN);
 	printf("Server %s:%d is listening...\n", ip, atoi(SERVER_PORT));
 
+	ft::Messenger *messenger = new ft::Messenger();
 	while (1)
 	{
-		ft::Messenger *parser;
-		int connect_fd;
-		int rv;
+		char	client_buff[1024];
+		int		client_fd;
+		int		byte_received;
+		int		rv;
 
 		socklen_t addr_len = sizeof(server_info);
-		connect_fd = accept(sock_fd, (struct sockaddr *) &server_info, &addr_len);
-		if (connect_fd < 0) {
+		client_fd = accept(sock_fd, (struct sockaddr *) &server_info, &addr_len);
+		if (client_fd < 0)
+		{
 			perror("Accept error: ");
 			throw std::runtime_error("accept error\n");
 		}
-		printf("A new connection with fd %d has been accepted\n", connect_fd);
+		printf("A new connection with fd %d has been accepted\n", client_fd);
 
-		parser = new ft::Messenger(connect_fd);
-		parser->GetRequest(connect_fd);
-		delete parser;
+		byte_received = read(client_fd, client_buff, 1024);
+		if (byte_received < 0)
+			printf("%s\n", "No bytes are there to read!\n");
+		else if (byte_received == 0)
+			printf("The client #%d closed the connection\n", client_fd);
+		else
+		{
+			rv = messenger->SetRequest(client_fd, std::string(&client_buff[0]));
+			if (rv < 0)
+				printf("Server: Messenger::SetRequest() Error\n");
+		}
+		close(client_fd);
 	}
+	delete messenger;
+	close(sock_fd);
 }

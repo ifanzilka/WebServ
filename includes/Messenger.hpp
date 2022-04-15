@@ -8,17 +8,21 @@
 
 namespace ft
 {
-	//TODO: определиться сколько мессенджеров создавать
 	class Messenger
 	{
 		public:
 			Messenger();
-			Messenger(const int client_fd);
+//			Messenger(const int client_fd);
 			~Messenger();
-//			int SetClientFd(const int client_fd);
-			void GetRequest(const int client_fd);
+			void	SetClientFd(const int client_fd);
+			int		SetRequest(const int client_fd, std::string request);
 		private:
-			const int	_client_fd;
+			int							_client_fd;
+//			std::string 				_http_method;
+//			std::string					_file_path;
+//			std::vector<std::string>	_headers;
+//			std::vector<std::string>	_body;
+
 			void	SendResponse(const int client_fd);
 	};
 }
