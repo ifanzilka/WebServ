@@ -6,7 +6,7 @@
 /*   By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/14 00:49:56 by bmarilli          #+#    #+#             */
-/*   Updated: 2022/04/16 04:56:01 by bmarilli         ###   ########.fr       */
+/*   Updated: 2022/04/16 18:44:57 by bmarilli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,8 @@
 #define SERVER_PROTOCOL 	AF_INET 	//IpV4
 #define	SERVER_TYPE			SOCK_STREAM //TCP
 #define MAX_CONNECT_LISTEN 	15			//In Listen
-#define	BUFFER_SIZE			2		//In Read Buffer !!!!( > 2)
+#define	BUFFER_SIZE_RECV	2			//In Read Buffer !!!!( > 2)
+#define	BUFFER_SIZE_SEND	2
 
 #define LOGGER_ENABLE		0			//1 - ON, 0 - OFF
 				

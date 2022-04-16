@@ -121,7 +121,7 @@ namespace ft
 	void ServerPoll::CheckRead()
 	{
 		Logger(BLUE, "Check read...");
-		char buffer[BUFFER_SIZE];
+		char buffer[BUFFER_SIZE_RECV];
 
 		std::vector<struct pollfd>::iterator	it = _pollfds.begin();
 		std::vector<struct pollfd>::iterator	it_end = _pollfds.end();
@@ -145,11 +145,11 @@ namespace ft
 	{
 		Logger(GREEN, "Readble is ready: fd(" + std::to_string(fd) + ") ✅");
 		
-		char buffer[BUFFER_SIZE];
+		char buffer[BUFFER_SIZE_RECV];
 		std::string full_msg ="";
-		bzero(buffer, BUFFER_SIZE);
+		bzero(buffer, BUFFER_SIZE_RECV);
 		
-		int ret = recv(fd, buffer, BUFFER_SIZE - 1, 0);
+		int ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
 		if (ret == 0)
 		{
 			Logger(RED, "Disconnect  fd(" + std::to_string(fd) + ") ❌ ");
@@ -162,9 +162,9 @@ namespace ft
 		
 		Logger(PURPLE, "Recv read " + std::to_string(ret) + " bytes");
 		Logger(B_GRAY, "buf:" + full_msg);
-		while (ret == BUFFER_SIZE - 1)
+		while (ret == BUFFER_SIZE_RECV - 1)
 		{
-			ret = recv(fd, buffer, BUFFER_SIZE - 1, 0);
+			ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
 			if (ret == -1)
 				break;
 			
