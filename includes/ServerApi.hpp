@@ -6,7 +6,7 @@
 /*   By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/14 00:49:56 by bmarilli          #+#    #+#             */
-/*   Updated: 2022/04/16 01:45:26 by bmarilli         ###   ########.fr       */
+/*   Updated: 2022/04/16 04:56:01 by bmarilli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ namespace ft
     	virtual int 	Listen();
 
 		/* Functional */
-		virtual void	AddFd(int fd) = 0;
+		//virtual void	AddFd(int fd) = 0;
 		//virtual void	RemoteFd(int fd) = 0;
 
 		/* Print Errno */

@@ -11,6 +11,8 @@ namespace ft
 
 	void ServerSelect::Init_Serv()
 	{
+		_logs << "ServerType: Select 🌐" << std::endl;
+
 		_id = 0;
 		_max_fd = _server_fd;
 	}
@@ -67,7 +69,6 @@ namespace ft
 
 			
 			Logger(BLUE, "Wait select...");
-
 			/* Останавливаю процесс для отловки событий */
 			_select = select(_max_fd + 1, &_readfds, NULL, NULL, NULL);
 			 
@@ -260,6 +261,13 @@ namespace ft
 		Logger(GREEN, "Data is read is " + std::to_string(full_msg.size()) + " bytes  ✅");
 		Logger(B_GRAY, full_msg);
 		send(fd, "Message has send successfully\n", strlen("Message has send successfully\n"), 0);
+	}
+
+
+	/* Destructor */
+	ServerSelect::~ServerSelect()
+	{
+		Logger(RED, "Call ServerSelect Destructor❌ ");
 	}
 
 }

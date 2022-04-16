@@ -193,7 +193,7 @@ namespace ft
 		_logs << std::put_time(timeinfo, "%S") << "]: ";
 		_logs << msg << std::endl;
 		std::cout << color << msg << NORM <<std::endl;
-
+		
 		#endif
 	}
 

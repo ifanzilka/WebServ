@@ -25,6 +25,8 @@ namespace ft
 
 	void ServerPoll::Init_Serv()
 	{
+		_logs << "ServerType: Poll 🌐" << std::endl;
+
 		struct pollfd fd_serv;
 
 		fd_serv.fd = _server_fd;
@@ -199,8 +201,7 @@ namespace ft
 	/* Destructor */
 	ServerPoll::~ServerPoll()
 	{
-		Logger("ServerPoll Destructor call🔴");
-		std::cout << RED"Called (ServerSelect) Destructor"NORM << std::endl;
+		Logger(RED, "Call ServerPoll Destructor❌ ");
 	}
 	
 }

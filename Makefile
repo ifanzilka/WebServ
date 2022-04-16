@@ -6,7 +6,7 @@
 #    By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/04/13 20:44:46 by bmarilli          #+#    #+#              #
-#    Updated: 2022/04/15 23:59:54 by bmarilli         ###   ########.fr        #
+#    Updated: 2022/04/16 05:26:02 by bmarilli         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,13 +35,23 @@ _PURPLE=$'\033[35m
 _CYAN=	$'\033[36m
 _WHITE=	$'\033[37m
 
+SRCS		= srcs/server/ServerApi.cpp
+SRCS_SELECT = srcs/server/ServerSelect.cpp
+SRCS_POLL 	= srcs/server/ServerPoll.cpp
+SRCS_KQUEUE = srcs/server/ServerKqueue.cpp
+
+
 all:			$(NAME)
 	
 
 select:
-	clang++ -Iincludes srcs/ServerApi.cpp srcs/ServerSelect.cpp  main2.cpp
+	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT)  main2.cpp
 
 poll:
-	clang++ -Iincludes srcs/ServerApi.cpp srcs/ServerPoll.cpp main3.cpp
+	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_POLL) main3.cpp
+
+kqueue:
+	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_KQUEUE) main4.cpp
+
 
 $(NAME): 		$(INC_DIR) $(OBJ)

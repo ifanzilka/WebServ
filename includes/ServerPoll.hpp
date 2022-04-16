@@ -27,12 +27,11 @@ namespace ft
 		~ServerPoll();
 
 	private:
-		void 	Init_Serv();
-
 		/* Client fds */
-		//pollfd_arr	_pollfds;
 		std::vector<struct pollfd> _pollfds;
 
+		/* Init Serv */
+		void 	Init_Serv();
 
 		void 	EventsCheck();
 		void 	CheckAccept();

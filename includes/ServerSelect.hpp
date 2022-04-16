@@ -40,10 +40,11 @@ namespace ft
 		fd_set 				_readfds;
 
 
+		void 	Init_Serv();
+		
 		void 	PrintClientInfo(struct sockaddr_in *info);
 		
-		void 	Init_Serv();
-
+	
 		/* Events */
 		void 	EventsCheck();
 		void 	CheckAccept();
