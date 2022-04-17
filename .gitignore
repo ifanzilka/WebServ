@@ -8,3 +8,4 @@ webserv_dev
 *.log
 *.DS_Store
 *.txt
+.notebook/

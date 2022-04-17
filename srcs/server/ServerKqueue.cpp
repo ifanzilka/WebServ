@@ -77,7 +77,7 @@ namespace ft
 				}
 				else if (event_fd == _server_fd)
             	{
-					Accept();
+					CheckAccept();
 				}
 				else if (evList[i].filter & EVFILT_READ)
 				{
@@ -88,35 +88,23 @@ namespace ft
 					//to do
 				}
 
-
-
-
-
 			}
 		}
 	}
 
-	void ServerKqueue::Accept()
+	void ServerKqueue::CheckAccept()
 	{
-		Logger(BLUE, "Accept...");
-		struct sockaddr_in	clientaddr;
-		socklen_t 			len;
+		Logger(BLUE, "CheckAccept...");
+
 		int 				client_fd;
 		
 
-		// Incoming socket connection on the listening socket.
-		// Create a new socket for the actual connection to client.
-		client_fd = accept(_server_fd, (struct sockaddr *)&clientaddr, (socklen_t *)&len);
+		client_fd = Accept();
 		if (client_fd == -1)
 		{
-			ServerError("Accept");
+			ServerError("CheckAccept");
+			return ;
 		}
-		Logger(GREEN, "New connection as fd:(" + std::to_string(client_fd) + ")✅");
-
-		// Put this new socket connection also as a 'filter' event
-		// to watch in kqueue, so we can now watch for events on this
-		// new socket.
-		//bzero(&evSet,sizeof(evSet));
 		EV_SET(&evSet, client_fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
 		if (kevent(_kq_fd, &evSet, 1, NULL, 0, NULL) < 0)
 		{

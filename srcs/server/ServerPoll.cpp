@@ -93,29 +93,19 @@ namespace ft
 	void ServerPoll::CheckAccept()
 	{
 		Logger(BLUE, "Check Accept...");
-
-		struct sockaddr_in	clientaddr;
-		socklen_t 			len;
 		int 				client_fd;
 
-		len = sizeof(clientaddr);
-		
 		if( _pollfds[0].revents == 0)
         	return;
 		
-		client_fd = accept(_server_fd,(struct sockaddr *)&clientaddr, &len);
-		if (client_fd< 0)
+		client_fd = Accept();
+		if (client_fd < 0)
 		{
 			if (errno != EWOULDBLOCK)
 				ServerError("Accept");
 			return;
 		}
-
-		Logger(GREEN, "New connection as fd:(" + std::to_string(client_fd) + ")✅");
-
-		PrintSockaddrInfo(&clientaddr);
 		AddFd(client_fd);
-
 	}
 
 	void ServerPoll::CheckRead()
@@ -137,10 +127,8 @@ namespace ft
 			ReadFd(it->fd);
 			it++;
 		}
-
 	}
 	
-
 	void ServerPoll::ReadFd(int fd)
 	{
 		Logger(GREEN, "Readble is ready: fd(" + std::to_string(fd) + ") ✅");

@@ -41,7 +41,7 @@ namespace ft
 		/* Init */
 		void 	Init_Serv();
 		
-		void	Accept();
+		void	CheckAccept();
 		void 	AddFd(int fd);
 		void	ReadFd(int fd);
 

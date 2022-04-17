@@ -152,6 +152,38 @@ namespace ft
 		return (_listen);
 	}
 
+	int	AbstractServerApi::Accept()
+	{
+		Logger(BLUE, "Accept...");
+		
+		struct sockaddr_in	clientaddr;
+		socklen_t 			len;
+		int 				client_fd;
+
+		// Incoming socket connection on the listening socket.
+		// Create a new socket for the actual connection to client.
+		client_fd = accept(_server_fd, (struct sockaddr *)&clientaddr, (socklen_t *)&len);
+		if (client_fd == -1)
+		{
+			ServerError("Accept");
+			return (-1);
+		}
+		Logger(GREEN, "New connection as fd:(" + std::to_string(client_fd) + ")✅");
+		AddClientInfo(client_fd, clientaddr);
+
+		return (client_fd);
+	}
+
+	void  AbstractServerApi::AddClientInfo(int fd, sockaddr_in client)
+	{
+		Logger(BLUE, "AddClientInfo...");
+		//std::map<int, struct sockaddr_in>::iterator iter;
+		_clients.insert(std::make_pair(fd, client));
+
+		PrintSockaddrInfo(&_clients[fd]);
+	}
+
+
 	void AbstractServerApi::PrintIpPort()
 	{
 		std::cout << PURPLE;
@@ -229,4 +261,8 @@ namespace ft
 		exit(42);
 	}
 
+	AbstractServerApi::~AbstractServerApi()
+	{
+		close(_server_fd);
+	}
 }

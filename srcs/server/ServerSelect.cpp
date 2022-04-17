@@ -97,9 +97,10 @@ namespace ft
 
 	void ServerSelect::EventsCheck()
 	{
+
 		/* Проверяю пришло ли кто на прослушку */
 		CheckAccept();
-	
+
 		/* Проверяю дескрипторы на чтение */
 		CheckRead();
 
@@ -169,24 +170,16 @@ namespace ft
 	{
 		Logger(BLUE, "Check Accept...");
 
-		struct sockaddr_in	clientaddr;
-		socklen_t 			len;
-		int 				client_fd;
+		int	client_fd;
 
-		len = sizeof(clientaddr);
-		
 		/* Если пришло событие на connect */
 		if (FD_ISSET(_server_fd, &_readfds))
 		{
-			client_fd = accept(_server_fd,(struct sockaddr *)&clientaddr, &len);
-			if (client_fd == -1)
-				AbstractServerApi::ServerError("Accept");
-
-			Logger(GREEN, "New connection fd: " + std::to_string(client_fd) + " ✅");
-			
-			PrintSockaddrInfo(&clientaddr);
-			AddFd(client_fd);
-			//TODO Добавить в массив информацию о клиенте
+			client_fd = Accept();
+			if (client_fd > 0)
+			{
+				AddFd(client_fd);
+			}//TODO Добавить в массив информацию о клиенте
 		}
 	}
 
@@ -202,7 +195,6 @@ namespace ft
 		it_end = _clients_fd.end();
 
 		
-
 		/* Проверяю дескрипторы на то что пришло ли что то чтение */
 		while (it_begin != it_end)
 		{

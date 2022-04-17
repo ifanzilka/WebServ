@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerApi.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ifanzilka <ifanzilka@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/14 00:49:56 by bmarilli          #+#    #+#             */
-/*   Updated: 2022/04/16 18:44:57 by bmarilli         ###   ########.fr       */
+/*   Updated: 2022/04/18 02:09:32 by ifanzilka        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,13 @@
 #include <fstream>
 #include <iostream>		/* std cout */
 #include <ctime>		/* time */
-
+#include <map>			/* map */
 
 #define SERVER_PROTOCOL 	AF_INET 	//IpV4
 #define	SERVER_TYPE			SOCK_STREAM //TCP
 #define MAX_CONNECT_LISTEN 	15			//In Listen
 #define	BUFFER_SIZE_RECV	2			//In Read Buffer !!!!( > 2)
-#define	BUFFER_SIZE_SEND	2
+#define	BUFFER_SIZE_SEND	2			//
 
 #define LOGGER_ENABLE		0			//1 - ON, 0 - OFF
 				
@@ -55,14 +55,21 @@ namespace ft
 		int 				_server_fd;
 		int					_fd_log_file;
 		
+		/*  Подключенные клиенты и их информация */
+		std::map<int, struct sockaddr_in>	_clients;
+		std::map<int, int>					_fd_id;
+		int									_max_id;
 
 		/* Говорю что можно переопределить*/
 		virtual	void	Init(std::string& ipaddr, int port);
 		virtual int 	Create_socket();
 		virtual int 	Binded();
     	virtual int 	Listen();
+		virtual	int 	Accept();
 
 		/* Functional */
+		void AddClientInfo(int fd, struct sockaddr_in client);
+		
 		//virtual void	AddFd(int fd) = 0;
 		//virtual void	RemoteFd(int fd) = 0;
 
@@ -70,6 +77,9 @@ namespace ft
 		virtual	void	ServerError(const char *s);
 		void 			Logger(std::string msg);
 		void			Logger(std::string color,std::string msg);
+
+
+		~AbstractServerApi();
 
 	private:
 		void 			PrintIpPort();

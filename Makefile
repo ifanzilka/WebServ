@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+         #
+#    By: ifanzilka <ifanzilka@student.42.fr>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/04/13 20:44:46 by bmarilli          #+#    #+#              #
-#    Updated: 2022/04/16 05:26:02 by bmarilli         ###   ########.fr        #
+#    Updated: 2022/04/18 01:48:25 by ifanzilka        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,13 +45,13 @@ all:			$(NAME)
 	
 
 select:
-	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT)  main2.cpp
+	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT) main2.cpp -o $(NAME)
 
 poll:
-	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_POLL) main3.cpp
+	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_POLL) main3.cpp	-o $(NAME)
 
 kqueue:
-	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_KQUEUE) main4.cpp
+	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_KQUEUE) main4.cpp	-o $(NAME)
 
 
 $(NAME): 		$(INC_DIR) $(OBJ)
