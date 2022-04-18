@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: ifanzilka <ifanzilka@student.42.fr>        +#+  +:+       +#+         #
+#    By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/04/13 20:44:46 by bmarilli          #+#    #+#              #
-#    Updated: 2022/04/18 01:48:25 by ifanzilka        ###   ########.fr        #
+#    Updated: 2022/04/19 00:15:54 by bmarilli         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ NAME =		webserv
 
 CXX =		clang++
 
-INC_DIR =	$(shell find includes -type d)
+INC_DIR =	includes#$(shell find includes -type d)
 
 
 #Compilation flag
@@ -39,7 +39,7 @@ SRCS		= srcs/server/ServerApi.cpp
 SRCS_SELECT = srcs/server/ServerSelect.cpp
 SRCS_POLL 	= srcs/server/ServerPoll.cpp
 SRCS_KQUEUE = srcs/server/ServerKqueue.cpp
-
+SRCS_PARSER_CONFIG = srcs/parse_config/LocationData.cpp srcs/parse_config/ParserConfig.cpp srcs/parse_config/ServerData.cpp
 
 all:			$(NAME)
 	
@@ -53,5 +53,7 @@ poll:
 kqueue:
 	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_KQUEUE) main4.cpp	-o $(NAME)
 
+parse:
+	$(CXX) -I$(INC_DIR) $(SRCS_PARSER_CONFIG) main5.cpp
 
 $(NAME): 		$(INC_DIR) $(OBJ)
