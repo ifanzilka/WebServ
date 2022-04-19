@@ -15,12 +15,22 @@ namespace ft
 	int Messenger::SetRequest(const int client_fd, std::string request)
 	{
 		int rv = 1;
-		//TODO: if the request is incorrect - return -1
-		// else 1
-		printf("%s\n", request.c_str());
-		SetClientFd(client_fd);
+		ft::RequestParser requestParser = ft::RequestParser();
 
-		SendResponse(_client_fd);
+		if (request.empty()
+			|| (_http_method = requestParser.GetHttpMethod(request)).empty())
+			rv = -1;
+		else
+		{
+			SetClientFd(client_fd);
+			_file_path = requestParser.GetFilePath(request);
+			//TODO: убедиться в том, что версия HTTP протокола нам не нужна
+			// (строка ниже удаляет эту информацию)
+			request.erase(0, request.find("\n") + 1);
+			_headers = requestParser.GetHeaders(request);
+
+			SendResponse(_client_fd);
+		}
 		return (rv);
 	}
 
