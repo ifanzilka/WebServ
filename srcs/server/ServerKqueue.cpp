@@ -106,11 +106,19 @@ namespace ft
 			ServerError("CheckAccept");
 			return ;
 		}
+		/* Добавляю нового клиента в аулл фд*/
 		EV_SET(&evSet, client_fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
 		if (kevent(_kq_fd, &evSet, 1, NULL, 0, NULL) < 0)
 		{
 			ServerError("kevent");
 		}
+		int byte_wrote = 0;
+		std::string	header("HTTP/1.1 200 OK\nContent-Type: text\nContent-Length: ");
+		std::string body = "<iframe width=\"1200\" height=\"800\"\nsrc=https://www.youtube.com/embed/C3LQfH-YGKM?start=4>\n</iframe>";
+		header += body.length();
+		header += "\n\n";
+		byte_wrote = write(client_fd, header.c_str(), header.size());
+		byte_wrote = write(client_fd, body.c_str(), body.length());
 		AddFd(client_fd);
 	}
 
@@ -150,6 +158,18 @@ namespace ft
 
 		Logger(GREEN, "Data is read is " + std::to_string(full_msg.size()) + " bytes  ✅");
 		Logger(B_GRAY, full_msg);
+
+		// char *msg = "HTTP/1.1 200 OK \n\n";
+		// int res =send(fd, msg, strlen(msg), 0);
+		// printf("res send: %d\n", res);
+
+		// int byte_wrote = 0;
+		// std::string	header("HTTP/1.1 200 OK\nContent-Type: text\nContent-Length: ");
+		// std::string body = "<iframe width=\"1200\" height=\"800\"\nsrc=https://www.youtube.com/embed/C3LQfH-YGKM?start=4>\n</iframe>";
+		// header += body.length();
+		// header += "\n\n";
+		// byte_wrote = write(fd, header.c_str(), header.size());
+		// byte_wrote = write(fd, body.c_str(), body.length());
 	}
 
 	/* Destrcutor */
