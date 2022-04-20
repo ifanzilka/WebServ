@@ -33,9 +33,7 @@ namespace ft
 		virtual int			CheckAccept();
 		virtual	int 		CheckRead();
 		//virtual int 		CheckWrite();
-		virtual	int			ReadFd(int fd);
-
-		virtual std::string GetClientRequest() const;
+		//virtual	int			ReadFd(int fd);
 
 		/* Destructor */
 		virtual ~ServerKqueue();
@@ -55,7 +53,6 @@ namespace ft
 
 		/* Init */
 		void 	Init_Serv();
-		
 		void 	AddFd(int fd);	
 		void	RemoteFd(int client_fd);
 	};

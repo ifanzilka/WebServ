@@ -60,16 +60,15 @@ namespace ft
 	void ServerPoll::AddFd(int fd)
 	{
 		Logger(B_GRAY, "Add fd " + std::to_string(fd));
-		fcntl(fd, F_SETFL, O_NONBLOCK);
 		struct pollfd fd_client;
 
 		fd_client.fd = fd;
 		fd_client.events = POLLIN;
 		fd_client.revents = 0;
-
 		_pollfds.push_back(fd_client);
 	}
 
+	/* Проверяю событие на Подключение если полюкчился возвращаю fd клиента иначе 0*/
 	int ServerPoll::CheckAccept()
 	{
 		Logger(BLUE, "Check Accept...");
@@ -89,11 +88,10 @@ namespace ft
 		return (client_fd);
 	}
 
+	/* Проверяю на чтение если нету возвращаю 0, иначе fd откуда читать */
 	int ServerPoll::CheckRead()
 	{
 		Logger(BLUE, "Check read...");
-		char buffer[BUFFER_SIZE_RECV];
-
 		std::vector<struct pollfd>::iterator	it = _pollfds.begin();
 		std::vector<struct pollfd>::iterator	it_end = _pollfds.end();
 
@@ -106,7 +104,6 @@ namespace ft
 			}
 
 			return(it->fd); 
-			//ReadFd(it->fd);
 			it++;
 		}
 		return (0);
@@ -152,13 +149,10 @@ namespace ft
 		return (_client_rqst_msg.size());
 	}
 
-	std::string ServerPoll::GetClientRequest() const
-	{
-		return (_client_rqst_msg);
-	}
-
 	void ServerPoll::RemoteFd(int client_fd)
 	{
+		Logger(B_GRAY, "Remote fd " + std::to_string(client_fd));
+
 		std::vector<struct pollfd>::iterator it = _pollfds.begin();
 		std::vector<struct pollfd>::iterator it_end = _pollfds.end();
 
@@ -172,12 +166,12 @@ namespace ft
 			}
 			it++;
 		}
+		RemoteClient(client_fd);
 	}
 
 	/* Destructor */
 	ServerPoll::~ServerPoll()
 	{
-		//TODO: закрытие сокета
 		Logger(RED, "Call ServerPoll Destructor ❌ ");
 	}
 	

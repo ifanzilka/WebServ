@@ -14,7 +14,6 @@ namespace ft
 	{
 		_logs << "ServerType: Select 🌐 " << std::endl;
 
-		_id = 0;
 		_max_fd = _server_fd;
 		
 		/* Чищу множество */
@@ -57,6 +56,7 @@ namespace ft
 		time.tv_sec = 0;
 		time.tv_usec = 0;
 
+
 		/* Множества приравниваю */
 		_writefds = _readfds = _currfds;
 
@@ -87,27 +87,28 @@ namespace ft
 		return (_select);
 	}
 
+	/* Проверяю на чтение если нету возвращаю 0, иначе fd откуда читать */
 	int	ServerSelect::CheckRead()
 	{
 		Logger(BLUE, "Check read...");
 
-		std::map<int, int>::iterator	it_begin;
-		std::map<int, int>::iterator	it_end;
+		std::vector<Client>::iterator	it_begin;
+		std::vector<Client>::iterator	it_end;
 
 
-		it_begin = _clients_fd.begin();
-		it_end = _clients_fd.end();
+		it_begin = _clients.begin();
+		it_end = _clients.end();
 
 		
 		/* Проверяю дескрипторы на то что пришло ли что то чтение */
 		while (it_begin != it_end)
 		{
 			/* message receives from curr_cli */
-			if (FD_ISSET((*it_begin).first, &_readfds))
+			if (FD_ISSET((*it_begin).getFd(), &_readfds))
 			{
 
 				//ReadFd((*it_begin).first);
-				return ((*it_begin).first);
+				return ((*it_begin).getFd());
 			}
 			it_begin++;
 		}
@@ -129,70 +130,38 @@ namespace ft
 			if (client_fd > 0)
 			{
 				AddFd(client_fd);
+				return (client_fd);	
 			}
 			return (client_fd);
+			
 		}
 		return (0);
 	}
+	
 
-	void ServerSelect::AddFd(int fd)
+	void	ServerSelect::AddFd(int fd)
 	{
 		Logger(B_GRAY, "Add fd " + std::to_string(fd));
-		fcntl(fd, F_SETFL, O_NONBLOCK);
-		
+
 		/* Добавляю во множество */
 		FD_SET(fd, &_currfds);
-
-		_clients_fd.insert(std::make_pair(fd, _id));
-		_id++;
 
 		//for select
 		_max_fd = fd > _max_fd ? fd : _max_fd;
 	}
 
+
 	void ServerSelect::RemoteFd(int fd)
 	{
 		Logger(B_GRAY, "Remote fd " + std::to_string(fd));
-		
-		std::map<int,int>::iterator		tmp;
-		
+
+
 		/* Удаляю из множества */
-		FD_CLR(fd, &_currfds);
-
-		tmp = _clients_fd.find(fd);
-		if (tmp != _clients_fd.end())
-		{
-			_clients_fd.erase(tmp);
-		}
+		FD_CLR(fd, &_currfds);	
+		
+		RemoteClient(fd);
 	}
 
-	void ServerSelect::PrintAllClients()
-	{
-		std::map<int, int>::iterator i;
-		std::map<int, int>::iterator end;
-
-
-		if (_clients_fd.size() == 0)
-
-		std::cout << PURPLE << "Clients List: "NORM << std::endl;
-
-		if (_clients_fd.size() == 0)
-		{
-			std::cout << "Empty\n";
-			return ;
-		}
-
-		i = _clients_fd.begin();
-		end = _clients_fd.end();
-		while (i != end)
-		{
-			std::cout << "Fd: " << (*i).first << " Id: " << (*i).second << std::endl;
-			i++;
-		}
-
-	}
-
-	//TODO: вынести этот метод в абстрактный класс, ибо реализация везде одинаковая
 	int ServerSelect::ReadFd(int fd)
 	{
 		Logger(GREEN, "Readble is ready: fd(" + std::to_string(fd) + ") ✅ ");
@@ -203,10 +172,8 @@ namespace ft
 		int ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
 		if (ret == 0)
 		{
-			PrintAllClients();
 			Logger(RED, "Disconnect  fd(" + std::to_string(fd) + ") ❌ ");
 			RemoteFd(fd);
-			PrintAllClients();
 			return (0);
 
 		}
@@ -227,7 +194,7 @@ namespace ft
 			Logger(B_GRAY, "subbuf:" + std::string(buffer));
 			Logger(PURPLE, "Replay Recv read " + std::to_string(ret) + " bytes");
 		}
-		//full_msg.pop_back();
+		_client_rqst_msg.pop_back();
 
 		Logger(GREEN, "Data is read is " + std::to_string(_client_rqst_msg.size()) + " bytes  ✅ ");
 		Logger(B_GRAY, _client_rqst_msg);
@@ -236,10 +203,6 @@ namespace ft
 		return (_client_rqst_msg.size());
 	}
 
-	std::string ServerSelect::GetClientRequest() const
-	{
-		return (_client_rqst_msg);
-	}
 
 	/* Destructor */
 	ServerSelect::~ServerSelect()
@@ -247,5 +210,4 @@ namespace ft
 		//TODO: закрытие сокета
 		Logger(RED, "Call ServerSelect Destructor❌ ");
 	}
-
 }

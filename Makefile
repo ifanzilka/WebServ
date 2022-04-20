@@ -6,7 +6,7 @@
 #    By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/04/13 20:44:46 by bmarilli          #+#    #+#              #
-#    Updated: 2022/04/19 00:15:54 by bmarilli         ###   ########.fr        #
+#    Updated: 2022/04/20 18:42:50 by bmarilli         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,5 +60,7 @@ parse:
 
 messenger:
 	$(CXX) -I$(INC_DIR) $(SRCS_MESSENGER) main5.cpp
+test:
+	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT)  srcs/server/ServerCore.cpp main5.cpp
 
 $(NAME): 		$(INC_DIR) $(OBJ)

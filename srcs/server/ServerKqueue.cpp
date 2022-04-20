@@ -85,6 +85,7 @@ namespace ft
 		// }
 	}
 
+	/* Проверяю событие на Подключение если полюкчился возвращаю fd клиента иначе 0*/
 	int ServerKqueue::CheckAccept()
 	{
 		Logger(BLUE, "CheckAccept...");
@@ -107,19 +108,15 @@ namespace ft
 			ServerError("CheckAccept");
 			return -1;
 		}
-
-		/* Добавляю нового клиента в аулл фд*/
-		EV_SET(&evSet, client_fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
-		if (kevent(_kq_fd, &evSet, 1, NULL, 0, NULL) < 0)
-		{
-			ServerError("kevent");
-		}
 		AddFd(client_fd);
 		return (client_fd);
 	}
 
+	/* Проверяю на чтение если нету возвращаю 0, иначе fd откуда читать */
 	int ServerKqueue::CheckRead()
 	{
+		Logger(BLUE, "Check Read ...");
+
 		for (int i = 0; i < new_events; i++)
 		{
 			int event_fd = evList[i].ident;
@@ -129,7 +126,7 @@ namespace ft
 			if (evList[i].flags & EV_EOF)
 			{
 				Logger(RED, "Disconnect fd(" + std::to_string(event_fd) + ") ❌ ");
-				close(event_fd);
+				RemoteFd(event_fd);
 			}
 			else if (evList[i].filter & EVFILT_READ)
 			{
@@ -143,64 +140,22 @@ namespace ft
 	void ServerKqueue::AddFd(int fd)
 	{
 		Logger(B_GRAY, "Add fd " + std::to_string(fd));
-		fcntl(fd, F_SETFL, O_NONBLOCK);
+
+		/* Добавляю нового клиента в аулл фд*/
+		EV_SET(&evSet, fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+		if (kevent(_kq_fd, &evSet, 1, NULL, 0, NULL) < 0)
+		{
+			ServerError("kevent");
+		}
 	}	
 
-	//TODO: вынести этот метод в абстрактный класс, ибо реализация везде одинаковая
-	int ServerKqueue::ReadFd(int client_fd)
+	void ServerKqueue::RemoteFd(int client_fd)
 	{
-		Logger(GREEN, "Readble is ready: fd(" + std::to_string(client_fd) + ") ✅ ");
-		
-		char buffer[BUFFER_SIZE_RECV];
-		bzero(buffer, BUFFER_SIZE_RECV);
+		Logger(B_GRAY, "Remote fd " + std::to_string(client_fd));
 
-		int ret = recv(client_fd, buffer, BUFFER_SIZE_RECV - 1, 0);
-
-		_client_rqst_msg.resize(0);
-		_client_rqst_msg += buffer;
-
-		Logger(PURPLE, "Recv read " + std::to_string(ret) + " bytes");
-		Logger(B_GRAY, "buff:" + _client_rqst_msg);
-		while (ret == BUFFER_SIZE_RECV - 1)
-		{
-			ret = recv(client_fd, buffer, BUFFER_SIZE_RECV - 1, 0);
-			if (ret == -1)
-				break;
-			
-			buffer[ret] = 0;
-			_client_rqst_msg += buffer;
-			Logger(B_GRAY, "subbuf:" + std::string(buffer));
-			Logger(PURPLE, "Replay Recv read " + std::to_string(ret) + " bytes");
-		}
-		// _client_rqst_msg.pop_back();
-
-		Logger(GREEN, "Data is read is " + std::to_string(_client_rqst_msg.size()) + " bytes  ✅ ");
-		Logger(B_GRAY, _client_rqst_msg);
-
-		return (_client_rqst_msg.size());
+		close(client_fd);
+		RemoteClient(client_fd);
 	}
-
-	std::string ServerKqueue::GetClientRequest() const
-	{
-		return (_client_rqst_msg);
-	}
-
-//	void ServerKqueue::RemoteFd(int client_fd)
-//	{
-//		std::vector<struct pollfd>::iterator it = _pollfds.begin();
-//		std::vector<struct pollfd>::iterator it_end = _pollfds.end();
-//
-//		while (it != it_end)
-//		{
-//			if (it->fd == client_fd)
-//			{
-//				close(it->fd);
-//				_pollfds.erase(it);
-//				return;
-//			}
-//			it++;
-//		}
-//	}
 
 	/* Destrcutor */
 	ServerKqueue::~ServerKqueue()

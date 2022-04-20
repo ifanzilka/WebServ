@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerApi.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ifanzilka <ifanzilka@student.42.fr>        +#+  +:+       +#+        */
+/*   By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/14 00:49:56 by bmarilli          #+#    #+#             */
-/*   Updated: 2022/04/18 02:09:32 by ifanzilka        ###   ########.fr       */
+/*   Updated: 2022/04/20 18:36:25 by bmarilli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 #include <iostream>		/* std cout */
 #include <ctime>		/* time */
 #include <map>			/* map */
+#include <vector>		/* vector */
 
 #define SERVER_PROTOCOL 	AF_INET 	//IpV4
 #define	SERVER_TYPE			SOCK_STREAM //TCP
@@ -35,10 +36,37 @@
 #define	BUFFER_SIZE_SEND	2			//
 
 #define LOGGER_ENABLE		0			//1 - ON, 0 - OFF
-				
 
+				
 namespace ft
 {
+
+	class Client
+	{
+	public:
+		Client(int fd_client, sockaddr_in 	addrinfo_client)
+		{
+			fd = fd_client;
+			addrinfo = addrinfo_client;	
+		};
+
+		int 	getFd() const
+		{
+			return (fd);
+		}
+
+		struct sockaddr_in getAddrInfo() const
+		{
+			return (addrinfo);
+		}		
+
+	private:
+		struct sockaddr_in 	addrinfo;
+		int					fd;
+		
+	};
+
+
 	class AbstractServerApi
 	{
 	public:
@@ -47,9 +75,9 @@ namespace ft
 		virtual int			CheckAccept() = 0;
 		virtual	int 		CheckRead() = 0;
 		//virtual int		CheckWrite() = 0;
-		virtual	int			ReadFd(int fd) = 0;
+		virtual	int			ReadFd(int fd);
 		
-		virtual std::string	GetClientRequest() const = 0;
+		virtual std::string	GetClientRequest() const;
 		
 		static void 		PrintSockaddrInfo(struct sockaddr_in *info);
 
@@ -67,9 +95,8 @@ namespace ft
 		int					_fd_log_file;
 		
 		/*  Подключенные клиенты и их информация */
-		std::map<int, struct sockaddr_in>	_clients;
-		std::map<int, int>					_fd_id;
-		int									_max_id;
+		std::vector<class ft::Client>			_clients;
+		
 		std::string							_client_rqst_msg;
 
 		/* Говорю что можно переопределить*/
@@ -79,9 +106,9 @@ namespace ft
     	virtual int 		Listen();
 		virtual	int 		Accept();
 
-
-		/* Functional */
-		void AddClientInfo(int fd, struct sockaddr_in client);
+		
+		void				AddClient(int fd, struct sockaddr_in addrclient);
+		void				RemoteClient(int fd);
 		
 		//virtual void	AddFd(int fd) = 0;
 		//virtual void	RemoteFd(int fd) = 0;

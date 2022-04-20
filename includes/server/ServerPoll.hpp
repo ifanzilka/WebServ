@@ -25,11 +25,8 @@ namespace ft
 		//virtual int 		CheckWrite();
 		virtual	int			ReadFd(int fd);
 
-		virtual std::string GetClientRequest() const;
-
 		/* Destructor */
 		virtual ~ServerPoll();
-
 
 	private:
 		/* Client fds */

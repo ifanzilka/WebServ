@@ -64,9 +64,10 @@ void ServerCore::StartWebServer() const
 			continue;
 		}
 	}
-	//std::string request = serverApi->GetClientRequest();
-//	messenger->SetRequest();
 
+	//std::string request = serverApi->GetClientRequest();
+	//	messenger->SetRequest();
+	
 	delete serverApi;
 	delete messenger;
 }

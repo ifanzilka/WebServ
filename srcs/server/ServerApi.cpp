@@ -168,19 +168,80 @@ namespace ft
 			ServerError("Accept");
 			return (-1);
 		}
-		Logger(GREEN, "New connection as fd:(" + std::to_string(client_fd) + ")✅");
-		AddClientInfo(client_fd, clientaddr);
 
+		Logger(GREEN, "New connection as fd:(" + std::to_string(client_fd) + ")✅");
+		AddClient(client_fd, clientaddr);
 		return (client_fd);
 	}
 
-	void  AbstractServerApi::AddClientInfo(int fd, sockaddr_in client)
+	int	AbstractServerApi::ReadFd(int fd)
 	{
-		Logger(BLUE, "AddClientInfo...");
-		//std::map<int, struct sockaddr_in>::iterator iter;
-		_clients.insert(std::make_pair(fd, client));
+		Logger(GREEN, "Readble is ready: fd(" + std::to_string(fd) + ") ✅ ");
+		
+		char buffer[BUFFER_SIZE_RECV];
+		bzero(buffer, BUFFER_SIZE_RECV);
 
-		PrintSockaddrInfo(&_clients[fd]);
+		int ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
+
+		_client_rqst_msg.resize(0);
+		_client_rqst_msg += buffer;
+
+		Logger(PURPLE, "Recv read " + std::to_string(ret) + " bytes");
+		Logger(B_GRAY, "buff:" + _client_rqst_msg);
+		while (ret == BUFFER_SIZE_RECV - 1)
+		{
+			ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
+			if (ret == -1)
+				break;
+			
+			buffer[ret] = 0;
+			_client_rqst_msg += buffer;
+			Logger(B_GRAY, "subbuf:" + std::string(buffer));
+			Logger(PURPLE, "Replay Recv read " + std::to_string(ret) + " bytes");
+		}
+		_client_rqst_msg.pop_back();
+
+		Logger(GREEN, "Data is read is " + std::to_string(_client_rqst_msg.size()) + " bytes  ✅ ");
+		Logger(B_GRAY, _client_rqst_msg);
+
+		return (_client_rqst_msg.size());
+	}
+
+
+	void	AbstractServerApi::AddClient(int fd, struct sockaddr_in addrclient)
+	{
+		Logger(GREEN, "Add client in vector ✅ ");
+		fcntl(fd, F_SETFL, O_NONBLOCK);
+		
+		Client *client = new Client(fd, addrclient);
+		_clients.push_back(*client);
+	}
+
+	void AbstractServerApi::RemoteClient(int fd)
+	{
+		Logger(B_GRAY, "Remote client " + std::to_string(fd));
+		
+		std::vector<Client>::iterator	it;
+		std::vector<Client>::iterator	it_end;
+		
+
+		it = _clients.begin();
+		it_end = _clients.end();
+
+		while (it < it_end)
+		{
+			if (it->getFd() == fd)
+			{
+				_clients.erase(it);
+				return;
+			}
+			it++;
+		}
+	}
+
+	std::string AbstractServerApi::GetClientRequest() const
+	{
+		return (_client_rqst_msg);
 	}
 
 	void AbstractServerApi::PrintIpPort()
