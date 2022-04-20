@@ -30,23 +30,42 @@ namespace ft
 			request.erase(0, request.find("\n") + 1);
 			_headers = requestParser.GetHeaders(request);
 
-			SendResponse(_client_fd);
+			SendResponse();
 		}
 		return (rv);
 	}
 
-	void Messenger::SendResponse(const int client_fd)
+	void Messenger::SendResponse()
 	{
-		int byte_wrote = 0;
-		std::string	header("HTTP/1.1 200 OK\nContent-Type: text\nContent-Length: ");
-		std::string first_body = "<div style=\"text-align: center;\"><iframe width=\"1600\" height=\"800\"\nsrc=https://www.youtube.com/embed/C3LQfH-YGKM?start=4>\n</iframe></div>";
-		std::string second_body = "<div style=\"text-align: center;\"><iframe width=\"1600\" height=\"800\"\nsrc=https://www.youtube.com/embed/C3LQfH-YGKM?start=4>\n</iframe></div>";
-		header += first_body.length();
-		header += second_body.length();
-		header += "\n\n";
-		byte_wrote = write(client_fd, header.c_str(), header.size());
-		byte_wrote = write(client_fd, first_body.c_str(), first_body.length());
-		byte_wrote = write(client_fd, second_body.c_str(), second_body.length());
+		int bytes_written = 0;
+		std::ifstream file("./resources/index.html");
+//		std::string line;
+		std::string file_data;
+
+		if (file.is_open())
+		{
+			std::copy(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(),
+					  std::back_inserter(file_data));
+
+			printf("\033[32mMessenger successfully read %ld bytes from file 👍 \033[0m\n", file_data.length());
+
+			std::cout << file_data << std::endl;
+
+			file.close();
+		}
+		else
+			printf("\033[31mUnable to open file! 😔 \033[0m\n");
+
+		if (_http_method.compare("GET") == 0)
+		{
+			std::string header("HTTP/1.1 200 OK\nContent-Type: text\nContent-Length: ");
+
+			header += file_data.length();
+			header += "\n\n";
+
+			bytes_written += write(_client_fd, header.c_str(), header.size());
+			bytes_written += write(_client_fd, file_data.c_str(), file_data.length());
+		}
 	}
 
 }

@@ -169,7 +169,7 @@ namespace ft
 			return (-1);
 		}
 
-		Logger(GREEN, "New connection as fd:(" + std::to_string(client_fd) + ")✅");
+		Logger(GREEN, "New connection as fd:(" + std::to_string(client_fd) + ")✅ ");
 		AddClient(client_fd, clientaddr);
 		return (client_fd);
 	}

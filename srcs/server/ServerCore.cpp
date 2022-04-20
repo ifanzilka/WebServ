@@ -3,7 +3,7 @@
 #include <iostream>
 
 ServerCore::ServerCore(const char *precessing_method)
-	: _processing_method(std::string(precessing_method))
+		: _processing_method(std::string(precessing_method))
 {}
 
 ServerCore::~ServerCore()
@@ -13,7 +13,7 @@ void ServerCore::Start() const
 {
 	if (_processing_method.compare("--kqueue") == 0
 		|| _processing_method.compare("--poll") == 0
-			|| _processing_method.compare("--select") == 0)
+		|| _processing_method.compare("--select") == 0)
 		StartWebServer();
 }
 
@@ -52,7 +52,7 @@ void ServerCore::StartWebServer() const
 	{
 		int client_fd;
 		serverApi->WaitEvent();
-		
+
 		if ( serverApi->CheckAccept() != 0)
 		{
 			continue;
@@ -61,13 +61,13 @@ void ServerCore::StartWebServer() const
 		if (client_fd != 0)
 		{
 			serverApi->ReadFd(client_fd);
+			//TODO: чтение может вернуть 0 или -1
+			std::string request = serverApi->GetClientRequest();
+			messenger->SetRequest(client_fd, request);
 			continue;
 		}
 	}
 
-	//std::string request = serverApi->GetClientRequest();
-	//	messenger->SetRequest();
-	
 	delete serverApi;
 	delete messenger;
 }
