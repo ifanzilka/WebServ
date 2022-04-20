@@ -11,8 +11,12 @@
 #include <sys/event.h>
 #include <sys/time.h>
 
-
 #define 		KQUEUE_SIZE 64
+
+#include <Include_Library.hpp>
+#include "../Messenger.hpp"
+
+class ServerData;
 
 namespace ft
 {
@@ -25,12 +29,23 @@ namespace ft
 		ServerKqueue(std::string ipaddr, int port);
 		ServerKqueue(const char *ipaddr, int port);
 
-		void Start();
+		virtual int			WaitEvent();		
+		virtual int			CheckAccept();
+		virtual	int 		CheckRead();
+		//virtual int 		CheckWrite();
+		virtual	int			ReadFd(int fd);
+
+		virtual std::string GetClientRequest() const;
 
 		/* Destructor */
-		~ServerKqueue();
-	private:
+		virtual ~ServerKqueue();
+
 		
+	private:
+		struct kevent 	evList[KQUEUE_SIZE];
+		int	 			new_events;
+		int				client_fd;
+
 		/* Для макроса */
 		struct kevent evSet;
 		
@@ -41,11 +56,8 @@ namespace ft
 		/* Init */
 		void 	Init_Serv();
 		
-		void	CheckAccept();
-		void 	AddFd(int fd);
-		void	ReadFd(int fd);
-
-
+		void 	AddFd(int fd);	
+		void	RemoteFd(int client_fd);
 	};
 }
 

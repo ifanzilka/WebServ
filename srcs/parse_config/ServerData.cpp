@@ -33,7 +33,6 @@ const std::string &ServerData::getServerName() const
 
 int ServerData::getPort() const
 {
-
 	return (this->_port);
 }
 

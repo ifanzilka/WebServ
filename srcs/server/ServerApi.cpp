@@ -148,7 +148,7 @@ namespace ft
         if (_listen < 0)
 			ServerError("listen");
 
-		std::cout << GREEN << "Server is listening " << MAX_CONNECT_LISTEN << " connect ✅ " << NORM << "\n";
+		std::cout << GREEN << "Server is listening " << MAX_CONNECT_LISTEN << " connections ✅ " << NORM << "\n";
 		return (_listen);
 	}
 
@@ -182,7 +182,6 @@ namespace ft
 
 		PrintSockaddrInfo(&_clients[fd]);
 	}
-
 
 	void AbstractServerApi::PrintIpPort()
 	{

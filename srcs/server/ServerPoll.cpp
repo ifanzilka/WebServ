@@ -26,7 +26,7 @@ namespace ft
 
 	void ServerPoll::Init_Serv()
 	{
-		_logs << "ServerType: Poll 🌐" << std::endl;
+		_logs << "ServerType: Poll 🌐 " << std::endl;
 
 		struct pollfd fd_serv;
 
@@ -38,44 +38,24 @@ namespace ft
 	}
 
 	/* Start */
-	void ServerPoll::Start()
+	int ServerPoll::WaitEvent()
 	{
 		int result;
 
-		while (1)
+		Logger(BLUE, "Wait Event...");
+		result = poll(& _pollfds[0], _pollfds.size(), -1);
+		Logger(B_GRAY, "Poll return " + std::to_string(result));
+
+		if (result == -1)
 		{
-			Logger(BLUE, "Wait poll...");
-			result = poll(& _pollfds[0], _pollfds.size(), -1);
-			Logger(B_GRAY, "Poll return " + std::to_string(result));
-
-			if (result == -1)
-			{
-				ServerError("Poll");
-			}
-			else if (result == 0)
-			{
-				Logger(RED, "TimeOut 🕐");
-				continue; ;
-			}
-			else
-			{
-				EventsCheck();
-			}
-		
+			ServerError("Poll");
 		}
-
+		else if (result == 0)
+		{
+			Logger(RED, "TimeOut 🕐 ");
+		}
+		return result;
 	}
-
-
-	void ServerPoll::EventsCheck()
-	{
-		/* Проверяю на наличие подключений */
-		CheckAccept();
-
-		/* Проверяю если что то на чтение */
-		CheckRead();
-	}
-
 
 	void ServerPoll::AddFd(int fd)
 	{
@@ -90,26 +70,26 @@ namespace ft
 		_pollfds.push_back(fd_client);
 	}
 
-
-	void ServerPoll::CheckAccept()
+	int ServerPoll::CheckAccept()
 	{
 		Logger(BLUE, "Check Accept...");
 		int 				client_fd;
 
 		if( _pollfds[0].revents == 0)
-        	return;
+        	return (0);
 		
 		client_fd = Accept();
 		if (client_fd < 0)
 		{
 			if (errno != EWOULDBLOCK)
 				ServerError("Accept");
-			return;
+			return -1;
 		}
 		AddFd(client_fd);
+		return (client_fd);
 	}
 
-	void ServerPoll::CheckRead()
+	int ServerPoll::CheckRead()
 	{
 		Logger(BLUE, "Check read...");
 		char buffer[BUFFER_SIZE_RECV];
@@ -125,47 +105,56 @@ namespace ft
 				continue;
 			}
 
-			ReadFd(it->fd);
+			return(it->fd); 
+			//ReadFd(it->fd);
 			it++;
 		}
+		return (0);
 	}
 	
-	void ServerPoll::ReadFd(int fd)
+	//TODO: вынести этот метод в абстрактный класс, ибо реализация везде одинаковая
+	int ServerPoll::ReadFd(int client_fd)
 	{
-		Logger(GREEN, "Readble is ready: fd(" + std::to_string(fd) + ") ✅");
+		Logger(GREEN, "Readble is ready: fd(" + std::to_string(client_fd) + ") ✅ ");
 		
 		char buffer[BUFFER_SIZE_RECV];
-		std::string full_msg ="";
 		bzero(buffer, BUFFER_SIZE_RECV);
 		
-		int ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
+		int ret = recv(client_fd, buffer, BUFFER_SIZE_RECV - 1, 0);
 		if (ret == 0)
 		{
-			Logger(RED, "Disconnect  fd(" + std::to_string(fd) + ") ❌ ");
-			RemoteFd(fd);
-			return;
-
+			Logger(RED, "Disconnect fd(" + std::to_string(client_fd) + ") ❌ ");
+			RemoteFd(client_fd);
+			return (0);
 		}
-		full_msg[ret] = 0;
-		full_msg += buffer;
+
+		_client_rqst_msg.resize(0);
+		_client_rqst_msg += buffer;
 		
 		Logger(PURPLE, "Recv read " + std::to_string(ret) + " bytes");
-		Logger(B_GRAY, "buf:" + full_msg);
+		Logger(B_GRAY, "buff:" + _client_rqst_msg);
 		while (ret == BUFFER_SIZE_RECV - 1)
 		{
-			ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
+			ret = recv(client_fd, buffer, BUFFER_SIZE_RECV - 1, 0);
 			if (ret == -1)
 				break;
 			
 			buffer[ret] = 0;
-			full_msg += buffer;
+			_client_rqst_msg += buffer;
 			Logger(B_GRAY, "subbuf:" + std::string(buffer));
 			Logger(PURPLE, "Replay Recv read " + std::to_string(ret) + " bytes");
 		}
-		//full_msg.pop_back();
+		// _client_rqst_msg.pop_back();
 
-		Logger(GREEN, "Data is read is " + std::to_string(full_msg.size()) + " bytes  ✅");
-		Logger(B_GRAY, full_msg);
+		Logger(GREEN, "Data is read is " + std::to_string(_client_rqst_msg.size()) + " bytes  ✅ ");
+		Logger(B_GRAY, _client_rqst_msg);
+
+		return (_client_rqst_msg.size());
+	}
+
+	std::string ServerPoll::GetClientRequest() const
+	{
+		return (_client_rqst_msg);
 	}
 
 	void ServerPoll::RemoteFd(int client_fd)
@@ -181,16 +170,15 @@ namespace ft
 				_pollfds.erase(it);
 				return;
 			}
-
 			it++;
 		}
-		
 	}
 
 	/* Destructor */
 	ServerPoll::~ServerPoll()
 	{
-		Logger(RED, "Call ServerPoll Destructor❌ ");
+		//TODO: закрытие сокета
+		Logger(RED, "Call ServerPoll Destructor ❌ ");
 	}
 	
 }

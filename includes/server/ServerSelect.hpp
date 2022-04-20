@@ -21,16 +21,21 @@ namespace ft
 		ServerSelect(std::string &ipaddr, int port);
 		ServerSelect(const char *ipaddr, int port);
 
-		void Start();
+		/* Events */
+		virtual	int			WaitEvent();
+		virtual	int			CheckAccept();
+		virtual	int			CheckRead();
+		//virtual void 		CheckWrite();
+		virtual	int			ReadFd(int clinet_fd);
+
+		virtual std::string GetClientRequest() const;
 
 		/* Destructor */
-		~ServerSelect();
-	
+		virtual ~ServerSelect();
+
 	private:
 		/* Fd and id clients */
 		std::map<int, int>	_clients_fd;
-		
-
 		int					_max_fd;
 		int					_id;
 
@@ -39,24 +44,14 @@ namespace ft
 		fd_set 				_writefds;
 		fd_set 				_readfds;
 
-
 		void 	Init_Serv();
-		
 		void 	PrintClientInfo(struct sockaddr_in *info);
 		
-	
-		/* Events */
-		void 	EventsCheck();
-		void 	CheckAccept();
-		void	CheckRead();
-		void 	CheckWrite();
 
 		void	AddFd(int client_fd);
 		void	RemoteFd(int client_fd);
+
 		
-
-
-		void 	ReadFd(int clinet_fd);
 		void 	PrintAllClients();
 
 	};

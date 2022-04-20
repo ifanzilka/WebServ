@@ -1,16 +1,17 @@
 #include <Include_Library.hpp>
 //#include "LocationData.hpp"
 
-
 LocationData::LocationData()
 {
 	this->_autoindex = false;
 	_client_buffer_body_size = 0;
 }
+
 LocationData::LocationData(const LocationData &cpy)
 {
 	*this = cpy;
 }
+
 LocationData::~LocationData()
 {}
 
@@ -32,38 +33,47 @@ LocationData &LocationData::operator=(const LocationData &cpy)
 	}
 	return (*this);
 }
+
 size_t LocationData::getClientBufferBodySize() const
 {
 	return (_client_buffer_body_size);
 }
+
 std::string const &LocationData::getLocationPath() const
 {
 	return (this->_location_path);
 }
+
 std::string const &LocationData::getRoot() const
 {
 	return (this->_root);
 }
+
 const std::string &LocationData::getFullPath() const
 {
 	return (this->_full_path);
 }
+
 const std::string &LocationData::getCgiPath() const
 {
 	return (this->_cgi_path);
 }
+
 const std::string &LocationData::getCgiExtension() const
 {
 	return (this->_cgi_extension);
 }
+
 const std::string &LocationData::getIndex() const
 {
 	return (this->_index);
 }
+
 const std::string &LocationData::getRedirect() const
 {
 	return (this->_redirect);
 }
+
 const std::vector<std::string> &LocationData::getMethods() const
 {
 	return (this->_methods);
@@ -83,10 +93,12 @@ void LocationData::setLocationPath(std::string const &location)
 {
 	this->_location_path = location;
 }
+
 void LocationData::setRoot(std::string const &root)
 {
 	this->_root = root;
 }
+
 void LocationData::setFullPath(std::string const &s1, std::string const &s2)
 {
 	this->_full_path = s1 + s2;
@@ -97,22 +109,27 @@ void LocationData::setFullPath(std::string const &s1, std::string const &s2)
 		_full_path.erase(_find, 1); // обрезаем лишний слэш
 	}
 }
+
 void LocationData::setCgiPath(std::string const &cgipath)
 {
 	this->_cgi_path = cgipath;
 }
+
 void LocationData::setCgiExtension(std::string const &cgiextension)
 {
 	this->_cgi_extension = cgiextension;
 }
+
 void LocationData::setIndex(std::string const &index)
 {
 	this->_index = index;
 }
+
 void LocationData::setRedirect(std::string const &redirect)
 {
 	this->_redirect = redirect;
 }
+
 void LocationData::setClientBufferBodySize(size_t body_size)
 {
 	this->_client_buffer_body_size = body_size;
@@ -130,25 +147,25 @@ void LocationData::setMethods(std::string const &methods)
 
 	// this->_methods = methods;
 }
+
 void LocationData::setAutoindex(bool autoindex)
 {
 	this->_autoindex = autoindex;
 }
 
-
 std::ostream &operator<<(std::ostream &out, const LocationData &ld)
 {
-	out << "Location Data Root     :    " << ld.getRoot() << std::endl;
-	out << "Location Data AutoIndex:    " << (bool)ld.getAutoindex()
+	out << "Root     :    " << ld.getRoot() << std::endl;
+	out << "AutoIndex:    " << (bool)ld.getAutoindex()
 		<< std::endl;
-	out << "Location Data Index:        " << ld.getIndex() << std::endl;
-	out << "Location Data LocationPath: " << ld.getLocationPath() << std::endl;
-	out << "Location Data FullPath:     " << ld.getFullPath() << std::endl;
-	out << "Location Data ClientBSize:  " << ld.getClientBufferBodySize()
+	out << "Index:        " << ld.getIndex() << std::endl;
+	out << "LocationPath: " << ld.getLocationPath() << std::endl;
+	out << "FullPath:     " << ld.getFullPath() << std::endl;
+	out << "ClientBSize:  " << ld.getClientBufferBodySize()
 		<< std::endl;
-	out << "Location Data Redirect:     " << ld.getRedirect() << std::endl;
-	out << "Location Data CgiExtension: " << ld.getCgiExtension() << std::endl;
-	out << "Location Data CgiPath     : " << ld.getCgiPath() << std::endl;
+	out << "Redirect:     " << ld.getRedirect() << std::endl;
+	out << "CgiExtension: " << ld.getCgiExtension() << std::endl;
+	out << "CgiPath     : " << ld.getCgiPath() << std::endl;
 	out << std::endl;
 	return (out);
 }

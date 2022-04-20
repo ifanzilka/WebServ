@@ -42,10 +42,21 @@ namespace ft
 	class AbstractServerApi
 	{
 	public:
-	
-		virtual	void 	Start() = 0;
 		
-    	static void 	PrintSockaddrInfo(struct sockaddr_in *info);
+		virtual	int			WaitEvent() = 0;
+		virtual int			CheckAccept() = 0;
+		virtual	int 		CheckRead() = 0;
+		//virtual int		CheckWrite() = 0;
+		virtual	int			ReadFd(int fd) = 0;
+		
+		virtual std::string	GetClientRequest() const = 0;
+		
+		static void 		PrintSockaddrInfo(struct sockaddr_in *info);
+
+		/* Destructor */
+		virtual				 ~AbstractServerApi();
+
+	
 	protected:
 		/* Настройка моей сети */
 		struct sockaddr_in 	_servaddr;
@@ -59,13 +70,15 @@ namespace ft
 		std::map<int, struct sockaddr_in>	_clients;
 		std::map<int, int>					_fd_id;
 		int									_max_id;
+		std::string							_client_rqst_msg;
 
 		/* Говорю что можно переопределить*/
-		virtual	void	Init(std::string& ipaddr, int port);
-		virtual int 	Create_socket();
-		virtual int 	Binded();
-    	virtual int 	Listen();
-		virtual	int 	Accept();
+		virtual	void		Init(std::string& ipaddr, int port);
+		virtual int 		Create_socket();
+		virtual int 		Binded();
+    	virtual int 		Listen();
+		virtual	int 		Accept();
+
 
 		/* Functional */
 		void AddClientInfo(int fd, struct sockaddr_in client);
@@ -77,10 +90,6 @@ namespace ft
 		virtual	void	ServerError(const char *s);
 		void 			Logger(std::string msg);
 		void			Logger(std::string color,std::string msg);
-
-
-		~AbstractServerApi();
-
 	private:
 		void 			PrintIpPort();
 

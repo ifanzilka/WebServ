@@ -13,18 +13,23 @@ namespace ft
 	class ServerPoll: public AbstractServerApi
 	{
 	public:
-		//typedef std::vector<struct pollfd>	pollfd_arr;
 
 		/* Constructor */
 		ServerPoll(int port);
 		ServerPoll(std::string &ipaddr, int port);
 		ServerPoll(const char *ipaddr, int port);
 		
-		void 	Start();
+		virtual int			WaitEvent();		
+		virtual int			CheckAccept();
+		virtual	int 		CheckRead();
+		//virtual int 		CheckWrite();
+		virtual	int			ReadFd(int fd);
 
+		virtual std::string GetClientRequest() const;
 
 		/* Destructor */
-		~ServerPoll();
+		virtual ~ServerPoll();
+
 
 	private:
 		/* Client fds */
@@ -33,14 +38,8 @@ namespace ft
 		/* Init Serv */
 		void 	Init_Serv();
 
-		void 	EventsCheck();
-		void 	CheckAccept();
-		void	CheckRead();
-		void	ReadFd(int fd);
-
 		void 	AddFd(int fd);
 		void	RemoteFd(int client_fd);
-
 	};
 }
 

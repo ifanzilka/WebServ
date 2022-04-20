@@ -2,6 +2,7 @@ a.out
 .vscode
 .idea/
 objs/
+example/
 dev_objs/
 webserv
 webserv_dev
