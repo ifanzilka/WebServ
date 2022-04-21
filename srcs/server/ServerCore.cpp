@@ -29,7 +29,6 @@ void ServerCore::StartWebServer() const
 	std::string host = data.getHost();
 	int			port = data.getPort();
 
-
 	ft::AbstractServerApi *serverApi;
 	ft::Messenger *messenger = new ft::Messenger();
 	if (_processing_method.compare("--kqueue") == 0)
@@ -53,7 +52,7 @@ void ServerCore::StartWebServer() const
 		int client_fd;
 		serverApi->WaitEvent();
 
-		if ( serverApi->CheckAccept() != 0)
+		if (serverApi->CheckAccept() != 0)
 		{
 			continue;
 		}

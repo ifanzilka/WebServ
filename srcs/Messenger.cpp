@@ -39,7 +39,6 @@ namespace ft
 	{
 		int bytes_written = 0;
 		std::ifstream file("./resources/index.html");
-//		std::string line;
 		std::string file_data;
 
 		if (file.is_open())
@@ -47,7 +46,7 @@ namespace ft
 			std::copy(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(),
 					  std::back_inserter(file_data));
 
-			printf("\033[32mMessenger successfully read %ld bytes from file 👍 \033[0m\n", file_data.length());
+			printf("\033[32mMessenger successfully read %ld bytes from a file 👍 \033[0m\n", file_data.length());
 
 			std::cout << file_data << std::endl;
 

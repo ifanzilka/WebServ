@@ -141,7 +141,6 @@ namespace ft
 			Logger(B_GRAY, "subbuf:" + std::string(buffer));
 			Logger(PURPLE, "Replay Recv read " + std::to_string(ret) + " bytes");
 		}
-		// _client_rqst_msg.pop_back();
 
 		Logger(GREEN, "Data is read is " + std::to_string(_client_rqst_msg.size()) + " bytes  ✅ ");
 		Logger(B_GRAY, _client_rqst_msg);

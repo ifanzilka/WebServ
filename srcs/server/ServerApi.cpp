@@ -83,11 +83,11 @@ namespace ft
 
 		_server_fd = socket(_servaddr.sin_family, SERVER_TYPE, 0);
 		//_server_fd = socket(AF_INET, SOCK_STREAM, 0);
-		
+
 		if (_server_fd < 0)
 			ServerError("Socket()");
-	
-		
+
+
 		std::cout << GREEN << "Socket fd(" <<  _server_fd << ") successfully created ✅ " << NORM << "\n";
 		return (_server_fd);
 	}
@@ -118,7 +118,7 @@ namespace ft
 	    
         */
         int bind_ = bind(_server_fd, (const struct sockaddr *)&_servaddr, sizeof(_servaddr));
-        
+
 		if (bind_ < 0)
             ServerError("Bind: ");
 
@@ -142,7 +142,7 @@ namespace ft
                 backlog - максимальное количество подключений, которые будут поставлены в очередь,
                 прежде чем в подключениях будет отказано.
         */
-        
+
         _listen = listen(_server_fd, MAX_CONNECT_LISTEN);
 
         if (_listen < 0)
@@ -155,7 +155,7 @@ namespace ft
 	int	AbstractServerApi::Accept()
 	{
 		Logger(BLUE, "Accept...");
-		
+
 		struct sockaddr_in	clientaddr;
 		socklen_t 			len;
 		int 				client_fd;
@@ -169,7 +169,7 @@ namespace ft
 			return (-1);
 		}
 
-		Logger(GREEN, "New connection as fd:(" + std::to_string(client_fd) + ")✅ ");
+		Logger(GREEN, "New connection as fd:(" + std::to_string(client_fd) + ") ✅ ");
 		AddClient(client_fd, clientaddr);
 		return (client_fd);
 	}
@@ -177,7 +177,7 @@ namespace ft
 	int	AbstractServerApi::ReadFd(int fd)
 	{
 		Logger(GREEN, "Readble is ready: fd(" + std::to_string(fd) + ") ✅ ");
-		
+
 		char buffer[BUFFER_SIZE_RECV];
 		bzero(buffer, BUFFER_SIZE_RECV);
 
@@ -186,22 +186,21 @@ namespace ft
 		_client_rqst_msg.resize(0);
 		_client_rqst_msg += buffer;
 
-		Logger(PURPLE, "Recv read " + std::to_string(ret) + " bytes");
-		Logger(B_GRAY, "buff:" + _client_rqst_msg);
+//		Logger(PURPLE, "Recv read " + std::to_string(ret) + " bytes");
+//		Logger(B_GRAY, "buff:" + _client_rqst_msg);
 		while (ret == BUFFER_SIZE_RECV - 1)
 		{
 			ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
 			if (ret == -1)
 				break;
-			
+
 			buffer[ret] = 0;
 			_client_rqst_msg += buffer;
-			Logger(B_GRAY, "subbuf:" + std::string(buffer));
-			Logger(PURPLE, "Replay Recv read " + std::to_string(ret) + " bytes");
+//			Logger(B_GRAY, "subbuf:" + std::string(buffer));
+//			Logger(PURPLE, "Replay Recv read " + std::to_string(ret) + " bytes");
 		}
-		_client_rqst_msg.pop_back();
 
-		Logger(GREEN, "Data is read is " + std::to_string(_client_rqst_msg.size()) + " bytes  ✅ ");
+		Logger(GREEN, "Server read " + std::to_string(_client_rqst_msg.size()) + " bytes from a client ✅ ");
 		Logger(B_GRAY, _client_rqst_msg);
 
 		return (_client_rqst_msg.size());
@@ -212,18 +211,20 @@ namespace ft
 	{
 		Logger(GREEN, "Add client in vector ✅ ");
 		fcntl(fd, F_SETFL, O_NONBLOCK);
-		
-		Client *client = new Client(fd, addrclient);
-		_clients.push_back(*client);
+
+		//TODO: обсудить появление ликов в случае аллоцирования клиента
+//		Client *client = new Client(fd, addrclient);
+		Client client(fd, addrclient);
+		_clients.push_back(client);
 	}
 
 	void AbstractServerApi::RemoteClient(int fd)
 	{
 		Logger(B_GRAY, "Remote client " + std::to_string(fd));
-		
+
 		std::vector<Client>::iterator	it;
 		std::vector<Client>::iterator	it_end;
-		
+
 
 		it = _clients.begin();
 		it_end = _clients.end();
@@ -285,7 +286,7 @@ namespace ft
 		_logs << std::put_time(timeinfo, "%S") << "]: ";
 		_logs << msg << std::endl;
 		std::cout << color << msg << NORM <<std::endl;
-		
+
 		#endif
 	}
 
@@ -293,9 +294,9 @@ namespace ft
 	{
 		char ip4[INET_ADDRSTRLEN]; // место для строки IPv4
 		int port;
-	
-		port =  ntohs(info->sin_port); 
-		
+
+		port =  ntohs(info->sin_port);
+
 		inet_ntop(AF_INET, &(info->sin_addr), ip4, INET_ADDRSTRLEN);//заполнили ip
 		//Logger(PURPLE,"IPv4 address is: " + std::string(ip4) + std::to_string(port));
 		printf(PURPLE"IPv4 address is: %s:%d"NORM"\n", ip4, port);
@@ -305,9 +306,9 @@ namespace ft
 	{
 		/* Смотрим ошибку из errno */
 		char *str_error =  strerror(errno);
-		std::string		err(str_error);	
+		std::string		err(str_error);
 		std::string 	error_type(s);
-		
+
 		std::string 	full = "";
 
 		/* Example: select: Bad decriptor */
