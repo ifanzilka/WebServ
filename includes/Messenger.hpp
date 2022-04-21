@@ -8,6 +8,8 @@
 #include <string>
 #include <fstream>
 
+#include "Include_Http_Library.hpp"
+
 namespace ft
 {
 	class Messenger
@@ -25,7 +27,8 @@ namespace ft
 		std::vector<std::string>	_headers;
 //			std::vector<std::string>	_body;
 
-		void	SendResponse();
+		void				SendResponse();
+		std::vector<char>	ReadFile(std::string file_path, std::string read_method);
 	};
 }
 

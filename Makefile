@@ -41,7 +41,8 @@ SRCS_POLL 	= srcs/server/ServerPoll.cpp
 SRCS_KQUEUE = srcs/server/ServerKqueue.cpp
 SRCS_PARSER_CONFIG = srcs/parse_config/LocationData.cpp srcs/parse_config/ParserConfig.cpp srcs/parse_config/ServerData.cpp
 SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POLL) $(SRCS) \
-	srcs/Messenger.cpp srcs/RequestParser.cpp srcs/server/ServerCore.cpp
+	srcs/Messenger.cpp srcs/server/ServerCore.cpp \
+	srcs/http/RequestParser.cpp srcs/http/GetMethod.cpp srcs/http/HttpMethodApi.cpp
 
 all:			$(NAME)
 	
