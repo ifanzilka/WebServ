@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+         #
+#    By: ifanzilka <ifanzilka@student.42.fr>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/04/13 20:44:46 by bmarilli          #+#    #+#              #
-#    Updated: 2022/04/20 18:42:50 by bmarilli         ###   ########.fr        #
+#    Updated: 2022/04/22 03:33:54 by ifanzilka        ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,6 +44,8 @@ SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POL
 	srcs/Messenger.cpp srcs/server/ServerCore.cpp \
 	srcs/http/RequestParser.cpp srcs/http/GetMethod.cpp srcs/http/HttpMethodApi.cpp
 
+FLAGS = -D KQUEUE
+
 all:			$(NAME)
 	
 
@@ -60,8 +62,9 @@ parse:
 	$(CXX) -I$(INC_DIR) $(SRCS_PARSER_CONFIG) main5.cpp
 
 messenger:
-	$(CXX) -I$(INC_DIR) $(SRCS_MESSENGER) main5.cpp
+	$(CXX) -I$(INC_DIR) $(FLAGS) $(SRCS_MESSENGER) main5.cpp
 test:
 	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT)  srcs/server/ServerCore.cpp main5.cpp
+
 
 $(NAME): 		$(INC_DIR) $(OBJ)

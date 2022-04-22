@@ -55,7 +55,8 @@ namespace ft
 		else
 		{
 //			file_path = "./resources/Audi.jpeg";
-			file_path = "./resources/fera.jpeg";
+			//file_path = "./resources/fera.jpeg";
+			file_path = "./resources/tmp.mp4";
 //			file_path = "./resources/mario_2.png";
 //			file_path = "./resources/linux.png";
 			file_buffer = ReadFile(file_path, "rb");

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerApi.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ifanzilka <ifanzilka@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/14 00:49:56 by bmarilli          #+#    #+#             */
-/*   Updated: 2022/04/22 03:13:55 by bmarilli         ###   ########.fr       */
+/*   Updated: 2022/04/22 04:16:25 by ifanzilka        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@
 #define SERVER_PROTOCOL 	AF_INET 	//IpV4
 #define	SERVER_TYPE			SOCK_STREAM //TCP
 #define MAX_CONNECT_LISTEN 	15			//In Listen
-#define	BUFFER_SIZE_RECV	2			//In Read Buffer !!!!( > 2)
+#define	BUFFER_SIZE_RECV	4096		//In Read Buffer !!!!( > 2)
 #define	BUFFER_SIZE_SEND	2			//
 
 #define LOGGER_ENABLE		0			//1 - ON, 0 - OFF
@@ -113,8 +113,6 @@ namespace ft
 		void				AddClient(int fd, struct sockaddr_in addrclient);
 		void				RemoteClient(int fd);
 		
-		//virtual void	AddFd(int fd) = 0;
-		//virtual void	RemoteFd(int fd) = 0;
 
 		/* Print Errno */
 		virtual	void	ServerError(const char *s);

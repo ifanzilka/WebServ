@@ -11,9 +11,6 @@ ServerCore::~ServerCore()
 
 void ServerCore::Start() const
 {
-	if (_processing_method.compare("--kqueue") == 0
-		|| _processing_method.compare("--poll") == 0
-		|| _processing_method.compare("--select") == 0)
 		StartWebServer();
 }
 
@@ -21,7 +18,7 @@ void ServerCore::StartWebServer() const
 {
 	ParserConfig config;
 	//TODO: добавить прием пути к конфигу через аргументы
-	config.parse("default.conf");
+	config.parse("configs/default.conf");
 	std::map<int, ServerData> servers = config.getServers();
 
 	//TODO: what to do if there's no ip-address or port in the config data???
@@ -31,21 +28,29 @@ void ServerCore::StartWebServer() const
 
 	ft::AbstractServerApi *serverApi;
 	ft::Messenger *messenger = new ft::Messenger();
-	if (_processing_method.compare("--kqueue") == 0)
-	{
+
+	#ifdef KQUEUE
 		std::cout << "KQUEUE" << std::endl;
 		serverApi = new ft::ServerKqueue(host, port);
-	}
-	else if (_processing_method.compare("--poll") == 0)
-	{
+	#endif
+	#ifdef POLL
 		std::cout << "POLL" << std::endl;
 		serverApi = new ft::ServerPoll(host, port);
-	}
-	else if (_processing_method.compare("--select") == 0)
-	{
+	#endif
+	#ifdef SELECT
 		std::cout << "SELECT" << std::endl;
 		serverApi = new ft::ServerSelect(host, port);
-	}
+	#endif
+	// else if (_processing_method.compare("--poll") == 0)
+	// {
+	// 	std::cout << "POLL" << std::endl;
+	// 	serverApi = new ft::ServerPoll(host, port);
+	// }
+	// else if (_processing_method.compare("--select") == 0)
+	// {
+	// 	std::cout << "SELECT" << std::endl;
+	// 	serverApi = new ft::ServerSelect(host, port);
+	// }
 	std::cout << PURPLE"Use:" << "http://"<< serverApi->GetHostName() << ":" <<  serverApi->GetPort() << NORM << std::endl;
 	while (1)
 	{
