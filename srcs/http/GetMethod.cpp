@@ -28,4 +28,5 @@ int GetMethod::SendHttpResponse(int client_fd, std::vector<char>	file_buffer)
 		sum += res;
 	}
 	printf("HAVE WRITTEN: %d\n", bytes_written);
+	return (0);
 }

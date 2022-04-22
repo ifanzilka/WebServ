@@ -46,7 +46,7 @@ void ServerCore::StartWebServer() const
 		std::cout << "SELECT" << std::endl;
 		serverApi = new ft::ServerSelect(host, port);
 	}
-
+	std::cout << PURPLE"Use:" << "http://"<< serverApi->GetHostName() << ":" <<  serverApi->GetPort() << NORM << std::endl;
 	while (1)
 	{
 		int client_fd;

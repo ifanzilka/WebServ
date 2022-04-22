@@ -6,7 +6,7 @@
 /*   By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/14 00:49:56 by bmarilli          #+#    #+#             */
-/*   Updated: 2022/04/20 18:36:25 by bmarilli         ###   ########.fr       */
+/*   Updated: 2022/04/22 03:13:55 by bmarilli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,10 @@ namespace ft
 		virtual	int			ReadFd(int fd);
 		
 		virtual std::string	GetClientRequest() const;
-		
+
+		std::string			GetHostName();
+		int					GetPort();
+
 		static void 		PrintSockaddrInfo(struct sockaddr_in *info);
 
 		/* Destructor */
