@@ -212,8 +212,6 @@ namespace ft
 		Logger(GREEN, "Add client in vector ✅ ");
 		fcntl(fd, F_SETFL, O_NONBLOCK);
 
-		//TODO: обсудить появление ликов в случае аллоцирования клиента
-//		Client *client = new Client(fd, addrclient);
 		Client client(fd, addrclient);
 		_clients.push_back(client);
 	}
@@ -240,20 +238,9 @@ namespace ft
 		}
 	}
 
-	std::string AbstractServerApi::GetClientRequest() const
-	{
-		return (_client_rqst_msg);
-	}
-
-	std::string	AbstractServerApi::GetHostName()
-	{
-		return (_ipaddr);
-	}
-
-	int			AbstractServerApi::GetPort()
-	{
-		return (_port);
-	}
+	std::string AbstractServerApi::GetClientRequest() const { return (_client_rqst_msg); }
+	std::string	AbstractServerApi::GetHostName() { return (_ipaddr); }
+	int	AbstractServerApi::GetPort() { return (_port); }
 
 	void AbstractServerApi::PrintIpPort()
 	{

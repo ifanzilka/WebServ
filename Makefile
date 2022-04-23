@@ -3,20 +3,18 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: bmarilli <bmarilli@student.42.fr>          +#+  +:+       +#+         #
+#    By: ifanzilka <ifanzilka@student.42.fr>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/04/13 20:44:46 by bmarilli          #+#    #+#              #
-#    Updated: 2022/04/20 18:42:50 by bmarilli         ###   ########.fr        #
+#    Updated: 2022/04/23 18:03:03 by jberegon         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
-
 
 NAME =		webserv
 
 CXX =		clang++
 
 INC_DIR =	includes#$(shell find includes -type d)
-
 
 #Compilation flag
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98
@@ -44,8 +42,9 @@ SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POL
 	srcs/Messenger.cpp srcs/server/ServerCore.cpp \
 	srcs/http/RequestParser.cpp srcs/http/GetMethod.cpp srcs/http/HttpMethodApi.cpp
 
-all:			$(NAME)
+FLAGS = -D KQUEUE
 
+all:			$(NAME)
 
 select:
 	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT) main2.cpp -o $(NAME)
@@ -60,8 +59,10 @@ parse:
 	$(CXX) -I$(INC_DIR) $(SRCS_PARSER_CONFIG) main5.cpp
 
 messenger:
-	$(CXX) -I$(INC_DIR) $(SRCS_MESSENGER) main5.cpp -o $(NAME)
+	$(CXX) -I$(INC_DIR) $(FLAGS) $(SRCS_MESSENGER) main5.cpp -o $(NAME)
+
 test:
 	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT)  srcs/server/ServerCore.cpp main5.cpp
+
 
 $(NAME): 		$(INC_DIR) $(OBJ)

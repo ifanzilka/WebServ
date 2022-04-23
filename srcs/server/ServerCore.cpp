@@ -2,9 +2,8 @@
 
 #include <iostream>
 
-ServerCore::ServerCore(std::string &processing_method, ServerData &server_data)
-		: _processing_method(std::string(processing_method)),
-		  _server_data(server_data)
+ServerCore::ServerCore(ServerData &server_data)
+	: _server_data(server_data)
 {}
 
 ServerCore::~ServerCore()
@@ -12,10 +11,7 @@ ServerCore::~ServerCore()
 
 void ServerCore::Start() const
 {
-	if (_processing_method.compare("--kqueue") == 0
-		|| _processing_method.compare("--poll") == 0
-		|| _processing_method.compare("--select") == 0)
-		StartWebServer();
+	StartWebServer();
 }
 
 void ServerCore::StartWebServer() const
@@ -25,14 +21,29 @@ void ServerCore::StartWebServer() const
 	int			port = _server_data.GetPort();
 
 	ft::Messenger messenger(_server_data);
-	ft::AbstractServerApi *serverApi;
-	if (_processing_method.compare("--kqueue") == 0)
-		serverApi = new ft::ServerKqueue(host, port);
-	else if (_processing_method.compare("--poll") == 0)
-		serverApi = new ft::ServerPoll(host, port);
-	else if (_processing_method.compare("--select") == 0)
-		serverApi = new ft::ServerSelect(host, port);
+	ft::AbstractServerApi *serverApi = nullptr;
 
+	#ifdef KQUEUE
+		std::cout << "KQUEUE\n" << std::endl;
+		serverApi = new ft::ServerKqueue(host, port);
+	#endif
+	#ifdef POLL
+		std::cout << "POLL\n" << std::endl;
+		serverApi = new ft::ServerPoll(host, port);
+	#endif
+	#ifdef SELECT
+		std::cout << "SELECT\n" << std::endl;
+		serverApi = new ft::ServerSelect(host, port);
+	#endif
+
+	if (serverApi == nullptr)
+	{
+		printf(RED"Server object is NULL!\n"NORM);
+		return;
+	}
+
+	std::cout << PURPLE"Use: " << "http://"<< serverApi->GetHostName() << ":" <<  serverApi->GetPort() << NORM << std::endl;
+	
 	while (1)
 	{
 		int client_fd;
@@ -54,5 +65,4 @@ void ServerCore::StartWebServer() const
 	}
 
 	delete serverApi;
-//	delete messenger;
 }

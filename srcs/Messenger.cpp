@@ -79,7 +79,7 @@ namespace ft
 
 			file_size = fread(&buffer[0], 1, file_length, file);
 			fclose(file);
-			printf("\033[32mMessenger successfully read %ld bytes from a file 👍 \033[0m\n", file_size);
+			printf("\033[32mMessenger successfully read \033[34m%ld\033[32m bytes from a file 👍 \033[0m\n", file_size);
 		}
 		else
 			printf("\033[31mUnable to open file! 😔 \033[0m\n");
