@@ -37,7 +37,7 @@
 
 #define LOGGER_ENABLE		0			//1 - ON, 0 - OFF
 
-				
+
 namespace ft
 {
 
@@ -47,7 +47,7 @@ namespace ft
 		Client(int fd_client, sockaddr_in 	addrinfo_client)
 		{
 			fd = fd_client;
-			addrinfo = addrinfo_client;	
+			addrinfo = addrinfo_client;
 		};
 
 		int 	getFd() const
@@ -58,33 +58,36 @@ namespace ft
 		struct sockaddr_in getAddrInfo() const
 		{
 			return (addrinfo);
-		}		
+		}
 
 	private:
 		struct sockaddr_in 	addrinfo;
 		int					fd;
-		
+
 	};
 
 
 	class AbstractServerApi
 	{
 	public:
-		
+
 		virtual	int			WaitEvent() = 0;
 		virtual int			CheckAccept() = 0;
 		virtual	int 		CheckRead() = 0;
 		//virtual int		CheckWrite() = 0;
 		virtual	int			ReadFd(int fd);
-		
+
 		virtual std::string	GetClientRequest() const;
-		
+
+		std::string			GetHostName();
+		int					GetPort();
+
 		static void 		PrintSockaddrInfo(struct sockaddr_in *info);
 
 		/* Destructor */
 		virtual				 ~AbstractServerApi();
 
-	
+
 	protected:
 		/* Настройка моей сети */
 		struct sockaddr_in 	_servaddr;
@@ -93,10 +96,10 @@ namespace ft
 		int 				_port;
 		int 				_server_fd;
 		int					_fd_log_file;
-		
+
 		/*  Подключенные клиенты и их информация */
 		std::vector<class ft::Client>			_clients;
-		
+
 		std::string							_client_rqst_msg;
 
 		/* Говорю что можно переопределить*/
@@ -106,10 +109,10 @@ namespace ft
     	virtual int 		Listen();
 		virtual	int 		Accept();
 
-		
+
 		void				AddClient(int fd, struct sockaddr_in addrclient);
 		void				RemoteClient(int fd);
-		
+
 		//virtual void	AddFd(int fd) = 0;
 		//virtual void	RemoteFd(int fd) = 0;
 

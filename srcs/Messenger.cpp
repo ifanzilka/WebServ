@@ -3,10 +3,7 @@
 
 namespace ft
 {
-	Messenger::Messenger()
-	{
-	}
-
+	Messenger::Messenger(ServerData &server_data) : _server_data(server_data) {}
 	Messenger::~Messenger() {}
 
 	void Messenger::SetClientFd(const int client_fd)
@@ -38,34 +35,30 @@ namespace ft
 
 	void Messenger::SendResponse()
 	{
-		std::vector<char>	file_buffer;
-		std::string			method;
-		std::string			file_path;
+		std::vector<LocationData> locations = _server_data.GetLocationData();
 
-		method = "binary";
-//		method = "text";
+//		std::vector<LocationData>::iterator bgn = locations.begin();
+//		while (bgn != locations.end())
+//		{
+//			std::cout << *bgn++ << std::endl;
+//		}
+
+		std::vector<char> file_buffer;
+		std::string file_path = "./resources";
+		std::string	http_code = "200 OK";
 
 		//TODO сделать распределение по типам файла
-		// и получение пути к файла извне
-		if (method.compare("text") == 0)
+		file_buffer = ReadFile(file_path + _file_path, "r");
+		if (file_buffer.empty())
 		{
-			file_path = "./resources/index.html";
-			file_buffer = ReadFile(file_path, "r");
-		}
-		else
-		{
-//			file_path = "./resources/Audi.jpeg";
-			file_path = "./resources/fera.jpeg";
-//			file_path = "./resources/mario_2.png";
-//			file_path = "./resources/linux.png";
-			file_buffer = ReadFile(file_path, "rb");
+			http_code = "404 Not Found";
+			file_buffer = ReadFile(file_path + "/404.html", "r");
 		}
 
 		if (_http_method.compare("GET") == 0)
 		{
 			GetMethod getMethod = GetMethod();
-			//TODO отослать буффер по ссылке
-			getMethod.SendHttpResponse(_client_fd, file_buffer);
+			getMethod.SendHttpResponse(_client_fd, file_buffer, http_code);
 		}
 	}
 

@@ -9,7 +9,8 @@ class HttpMethodApi
 		virtual			~HttpMethodApi();
 		std::string 	GetContentType() const;
 		int				GetContentLength() const;
-		virtual		int SendHttpResponse(int client_fd, std::vector<char>	file_buffer) = 0;
+		virtual		int SendHttpResponse(int client_fd, std::vector<char> &file_buffer,
+			std::string _http_code) = 0;
 	protected:
 
 	private:

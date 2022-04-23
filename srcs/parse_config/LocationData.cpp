@@ -3,17 +3,15 @@
 
 LocationData::LocationData()
 {
+	//TODO: почитать про инициализацию bool переменных и почему
+	// без этого некорректно работают сеттеры
 	this->_autoindex = false;
+	this->_exact_path = false;
 	_client_buffer_body_size = 0;
 }
 
-LocationData::LocationData(const LocationData &cpy)
-{
-	*this = cpy;
-}
-
-LocationData::~LocationData()
-{}
+LocationData::~LocationData() {}
+LocationData::LocationData(const LocationData &cpy) { *this = cpy; }
 
 LocationData &LocationData::operator=(const LocationData &cpy)
 {
@@ -27,6 +25,7 @@ LocationData &LocationData::operator=(const LocationData &cpy)
 		this->_index = cpy._index;
 		this->_redirect = cpy._redirect;
 		this->_autoindex = cpy._autoindex;
+		this->_exact_path = cpy._exact_path;
 		this->_methods = cpy._methods;
 		this->_client_buffer_body_size = cpy._client_buffer_body_size;
 		_autoindex = cpy._autoindex;
@@ -34,72 +33,30 @@ LocationData &LocationData::operator=(const LocationData &cpy)
 	return (*this);
 }
 
-size_t LocationData::getClientBufferBodySize() const
-{
-	return (_client_buffer_body_size);
-}
+const std::string &LocationData::				GetCgiPath() const { return (this->_cgi_path); }
+size_t LocationData::							GetClientBufferBodySize() const { return (_client_buffer_body_size); }
+const std::string &LocationData::				GetCgiExtension() const { return (this->_cgi_extension); }
+const std::string &LocationData::				GetFullPath() const { return (this->_full_path); }
+std::string const &LocationData::				GetLocationPath() const { return (this->_location_path); }
+const std::string &LocationData::				GetIndex() const { return (this->_index); }
+std::string const &LocationData::				GetRoot() const { return (this->_root); }
+const std::string &LocationData::				GetRedirect() const { return (this->_redirect); }
+const std::vector<std::string> &LocationData::	GetMethods() const { return (this->_methods); }
 
-std::string const &LocationData::getLocationPath() const
-{
-	return (this->_location_path);
-}
+bool LocationData::IsAutoindex() const { return (this->_autoindex); }
+bool LocationData::IsExactPath() const { return (this->_exact_path); }
 
-std::string const &LocationData::getRoot() const
-{
-	return (this->_root);
-}
+void LocationData::		SetAutoindex(bool autoindex) { this->_autoindex = autoindex; }
+void LocationData::		SetClientBufferBodySize(size_t body_size) { this->_client_buffer_body_size = body_size; }
+void LocationData::		SetCgiPath(std::string const &cgipath) { this->_cgi_path = cgipath; }
+void LocationData::		SetCgiExtension(std::string const &cgiextension) { this->_cgi_extension = cgiextension; }
+void LocationData::		SetExactPath(bool exact_path) { this->_exact_path = exact_path; }
+void LocationData::		SetIndex(std::string const &index) { this->_index = index; }
+void LocationData::		SetLocationPath(std::string const &location) { this->_location_path = location; }
+void LocationData::		SetRoot(std::string const &root) { this->_root = root; }
+void LocationData::		SetRedirect(std::string const &redirect) { this->_redirect = redirect; }
 
-const std::string &LocationData::getFullPath() const
-{
-	return (this->_full_path);
-}
-
-const std::string &LocationData::getCgiPath() const
-{
-	return (this->_cgi_path);
-}
-
-const std::string &LocationData::getCgiExtension() const
-{
-	return (this->_cgi_extension);
-}
-
-const std::string &LocationData::getIndex() const
-{
-	return (this->_index);
-}
-
-const std::string &LocationData::getRedirect() const
-{
-	return (this->_redirect);
-}
-
-const std::vector<std::string> &LocationData::getMethods() const
-{
-	return (this->_methods);
-}
-
-bool LocationData::getAutoindex() const
-{
-	return (this->_autoindex);
-}
-
-// 	void set_location_path(std::string _location_path)
-// 	{
-// 		this._location_path = _location_path;
-// 	}
-
-void LocationData::setLocationPath(std::string const &location)
-{
-	this->_location_path = location;
-}
-
-void LocationData::setRoot(std::string const &root)
-{
-	this->_root = root;
-}
-
-void LocationData::setFullPath(std::string const &s1, std::string const &s2)
+void LocationData::SetFullPath(std::string const &s1, std::string const &s2)
 {
 	this->_full_path = s1 + s2;
 	size_t _find;
@@ -110,32 +67,7 @@ void LocationData::setFullPath(std::string const &s1, std::string const &s2)
 	}
 }
 
-void LocationData::setCgiPath(std::string const &cgipath)
-{
-	this->_cgi_path = cgipath;
-}
-
-void LocationData::setCgiExtension(std::string const &cgiextension)
-{
-	this->_cgi_extension = cgiextension;
-}
-
-void LocationData::setIndex(std::string const &index)
-{
-	this->_index = index;
-}
-
-void LocationData::setRedirect(std::string const &redirect)
-{
-	this->_redirect = redirect;
-}
-
-void LocationData::setClientBufferBodySize(size_t body_size)
-{
-	this->_client_buffer_body_size = body_size;
-}
-
-void LocationData::setMethods(std::string const &methods)
+void LocationData::SetMethods(std::string const &methods)
 {
 	// std::string sentence = "Hello how are you";
 	std::istringstream iss(methods);
@@ -148,24 +80,18 @@ void LocationData::setMethods(std::string const &methods)
 	// this->_methods = methods;
 }
 
-void LocationData::setAutoindex(bool autoindex)
-{
-	this->_autoindex = autoindex;
-}
-
 std::ostream &operator<<(std::ostream &out, const LocationData &ld)
 {
-	out << "Root     :    " << ld.getRoot() << std::endl;
-	out << "AutoIndex:    " << (bool)ld.getAutoindex()
-		<< std::endl;
-	out << "Index:        " << ld.getIndex() << std::endl;
-	out << "LocationPath: " << ld.getLocationPath() << std::endl;
-	out << "FullPath:     " << ld.getFullPath() << std::endl;
-	out << "ClientBSize:  " << ld.getClientBufferBodySize()
-		<< std::endl;
-	out << "Redirect:     " << ld.getRedirect() << std::endl;
-	out << "CgiExtension: " << ld.getCgiExtension() << std::endl;
-	out << "CgiPath     : " << ld.getCgiPath() << std::endl;
+	out << "Root:         " << (ld.GetRoot().empty() ? "not specified" : ld.GetRoot()) << std::endl;
+	out << "AutoIndex:    " << (ld.IsAutoindex() == 1 ? "true" : "false") << std::endl;
+	out << "Index:        " << (ld.GetIndex().empty() ? "not specified" : ld.GetIndex()) << std::endl;
+	out << "LocationPath: " << ld.GetLocationPath() << std::endl;
+	out << "ExactPath:    " << (ld.IsExactPath() == 1 ? "true" : "false") << std::endl;
+	out << "FullPath:     " << ld.GetFullPath() << std::endl;
+	out << "ClientBSize:  " << ld.GetClientBufferBodySize() << std::endl;
+	out << "Redirect:     " << (ld.GetRedirect().empty() ? "not specified" : ld.GetRedirect()) << std::endl;
+	out << "CgiExtension: " << (ld.GetCgiExtension().empty() ? "not specified" : ld.GetCgiExtension()) << std::endl;
+	out << "CgiPath:      " << (ld.GetCgiPath().empty() ? "not specified" : ld.GetCgiPath()) << std::endl;
 	out << std::endl;
 	return (out);
 }

@@ -45,7 +45,7 @@ SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POL
 	srcs/http/RequestParser.cpp srcs/http/GetMethod.cpp srcs/http/HttpMethodApi.cpp
 
 all:			$(NAME)
-	
+
 
 select:
 	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT) main2.cpp -o $(NAME)
@@ -60,7 +60,7 @@ parse:
 	$(CXX) -I$(INC_DIR) $(SRCS_PARSER_CONFIG) main5.cpp
 
 messenger:
-	$(CXX) -I$(INC_DIR) $(SRCS_MESSENGER) main5.cpp
+	$(CXX) -I$(INC_DIR) $(SRCS_MESSENGER) main5.cpp -o $(NAME)
 test:
 	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT)  srcs/server/ServerCore.cpp main5.cpp
 

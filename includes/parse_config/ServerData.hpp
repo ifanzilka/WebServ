@@ -34,17 +34,17 @@ public:
 	~ServerData();
 
 	/* Geters */
-	const std::string 				&getServerName() const;
-	int 							getPort() const;
-	const std::string 				&getHost() const;
-	const std::vector<LocationData> &getLocationData() const;
+	const std::string 				&GetServerName() const;
+	int 							GetPort() const;
+	const std::string 				&GetHost() const;
+	const std::vector<LocationData> &GetLocationData() const;
 
-	void addLocationData(LocationData const &locationData);
+	void AddLocationData(LocationData const &locationData);
 
 	/* Setters */
-	void setServerName(std::string const &name);
-	void setPort(int port);
-	void setHost(std::string const &host);
+	void SetServerName(std::string const &name);
+	void SetPort(int port);
+	void SetHost(std::string const &host);
 };
 
 std::ostream &operator<<(std::ostream &out, const ServerData &sd);

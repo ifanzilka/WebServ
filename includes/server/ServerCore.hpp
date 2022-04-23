@@ -7,11 +7,13 @@
 class ServerCore
 {
 	public:
-		ServerCore(const char *processing_method);
+		ServerCore(std::string &processing_method, ServerData &server_data);
 		~ServerCore();
 		void Start() const;
+
 	private:
-		std::string _processing_method;
+		ServerData 	&_server_data;
+		std::string	_processing_method;
 		void	StartWebServer() const;
 };
 

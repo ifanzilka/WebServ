@@ -245,6 +245,16 @@ namespace ft
 		return (_client_rqst_msg);
 	}
 
+	std::string	AbstractServerApi::GetHostName()
+	{
+		return (_ipaddr);
+	}
+
+	int			AbstractServerApi::GetPort()
+	{
+		return (_port);
+	}
+
 	void AbstractServerApi::PrintIpPort()
 	{
 		std::cout << PURPLE;

@@ -26,43 +26,42 @@ ServerData &ServerData::operator=(const ServerData &cpy)
 	return (*this);
 }
 
-const std::string &ServerData::getServerName() const
+const std::string &ServerData::GetServerName() const
 {
 	return (this->_server_name);
 }
 
-int ServerData::getPort() const
+int ServerData::GetPort() const
 {
 	return (this->_port);
 }
 
-const std::string &ServerData::getHost() const
+const std::string &ServerData::GetHost() const
 {
 	return (this->_host);
 }
 
-const std::vector<LocationData> &ServerData::getLocationData() const
+const std::vector<LocationData> &ServerData::GetLocationData() const
 {
 	return (this->_loc);
 }
 
-void ServerData::addLocationData(const LocationData &locationData)
+void ServerData::AddLocationData(const LocationData &locationData)
 {
 	_loc.push_back(locationData);
 }
 
-void ServerData::setServerName(std::string const &name)
+void ServerData::SetServerName(std::string const &name)
 {
 	this->_server_name = name;
 }
 
-void ServerData::setPort(int port)
+void ServerData::SetPort(int port)
 {
 	this->_port = port;
-
 }
 
-void ServerData::setHost(std::string const &host)
+void ServerData::SetHost(std::string const &host)
 {
 	this->_host = host;
 }
@@ -71,11 +70,11 @@ void ServerData::setHost(std::string const &host)
 std::ostream &operator<<(std::ostream &out, const ServerData &tmp)
 {
 	std::vector<LocationData> loc;
-	loc = tmp.getLocationData();
+	loc = tmp.GetLocationData();
 
-	out << "ServName: " << tmp.getServerName() << std::endl;
-	out << "Port: " << tmp.getPort() << std::endl;
-	out << "Host: " << tmp.getHost() << std::endl;
+	out << "ServName: " << tmp.GetServerName() << std::endl;
+	out << "Port: " << tmp.GetPort() << std::endl;
+	out << "Host: " << tmp.GetHost() << std::endl;
 
 	for (std::vector<LocationData>::iterator it = loc.begin();
 		 it != loc.end(); ++it)
