@@ -30,4 +30,6 @@
   - ***git commit's icons:***
     - Visual Refactor: 🎨
     - Code Refactor(Fix): 🐞
-    - Add new class: 🎁 
+    - Added new class: 🎁 
+    - Added new functional: 🧱
+    - Changed mechanics: 🛠
