@@ -60,6 +60,7 @@ void ServerCore::StartWebServer() const
 			//TODO: чтение может вернуть 0 или -1
 			std::string request = serverApi->GetClientRequest();
 			messenger.SetRequest(client_fd, request);
+			messenger.ClearValidLocations();
 			continue;
 		}
 	}
