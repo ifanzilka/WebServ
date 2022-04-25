@@ -9,10 +9,17 @@ namespace ft
 	Messenger::Messenger(ServerData &server_data)
 		: _server_data(server_data), _web_page_name("index.html"),
 			_root_dir("./resources")
-	{}
+	{
+		SetDataViaConfig();
+	}
 
 
 	Messenger::~Messenger() {}
+
+	void Messenger::SetDataViaConfig()
+	{
+
+	}
 
 	void Messenger::SetClientFd(const int client_fd)
 	{
@@ -48,20 +55,22 @@ namespace ft
 
 		std::vector<LocationData>::iterator bgn = locations.begin();
 
-		printf("Messenger::SetValidLocations\n");
-		printf("%s\n", (BLUE"Request Path: "NORM + _file_path).c_str());
+		printf(PURPLE"Messenger::SetValidLocations\n"NORM); //TODO: удалить
+		printf("%s\n", (BLUE"Request Path: "NORM + _file_path).c_str()); 	//TODO: удалить
 		for (; bgn != locations.end(); bgn++)
 		{
 			location = (*bgn).GetLocationPath();
-			// первый if проверяет ищем ли мы файл с разрешением(.html)
-			// или же просто открываем корень
-			if ((_file_path.length() == 1 && location[0] == '/')
-				|| _file_path.find_first_of(".") != std::string::npos)
+
+//			if ((_file_path.length() == 1 && location[0] == '/')
+//				|| _file_path.find_first_of(".") != std::string::npos)
+			if (location[0] == '/' && location.length() == 1)
 			{
-				_valid_locations.insert(std::make_pair(1, "/"));
-				break;
+				if (_file_path.length() == 1)
+					_valid_locations.insert(std::make_pair(1, "/"));
+				else
+					_valid_locations.insert(std::make_pair(3, "/"));
 			}
-			else if (location.length() > 1 && location.find(&_file_path[1]) != std::string::npos)
+			else if (_file_path != "/" && location.find(&_file_path[1]) != std::string::npos)
 			{
 				if ((*bgn).IsExactPath() && _file_path != location)
 					continue;
@@ -72,6 +81,7 @@ namespace ft
 			}
 		}
 
+		//TODO: удалить
 		std::multimap<int, std::string>::iterator it = _valid_locations.begin();
 		for (; it != _valid_locations.end(); it++)
 		{
@@ -79,36 +89,79 @@ namespace ft
 		}
 	}
 
-	//TODO: добавить ./resources в root как дефолтное значение
-	// и проверять наличие файла для цикла for
+	std::string Messenger::GetRootByLocation(std::string &location_data)
+	{
+		std::vector <LocationData> locations = _server_data.GetLocationData();
+		std::string	root;
+
+		std::vector<LocationData>::iterator bgn = locations.begin();
+		for (; bgn != locations.end(); bgn++)
+		{
+			if ((*bgn).GetLocationPath() == location_data)
+			{
+				root = (*bgn).GetRoot();
+				break;
+			}
+		}
+		return (root);
+	}
+
+	std::string Messenger::ConstructFullPath(std::string valid_location)
+	{
+		std::string file_name_after_slash = &_file_path[_file_path.find("/")];
+		std::string fnl_file_path;
+
+		std::string root = GetRootByLocation(valid_location);
+		fnl_file_path = _root_dir;
+
+		if (root.empty())
+			printf("%s: THERE IS NO ROOT!\n", valid_location.c_str());
+		else
+		{
+			if (root[0] == '.')
+				root = &root[1];
+			fnl_file_path += root;
+		}
+
+		if (fnl_file_path[fnl_file_path.length() - 1] == '/')
+			fnl_file_path.resize(fnl_file_path.length() - 1);
+
+		if (file_name_after_slash.find_last_of(".") != std::string::npos) // если в искомом пути есть расширение файла
+			fnl_file_path += _file_path;
+		else
+			fnl_file_path += valid_location;
+
+		printf("file_path: %s\n", fnl_file_path.c_str());	//TODO: удалить
+
+		// если в искомом пути и валидном location нет расширения файла
+		if (file_name_after_slash.find_last_of(".") == std::string::npos
+			&& (valid_location).find_last_of(".") == std::string::npos)
+		{
+			if (fnl_file_path[fnl_file_path.length() - 1] != '/')
+				fnl_file_path += '/';
+			fnl_file_path += _web_page_name;
+		}
+		return (fnl_file_path);
+	}
+
 	std::string Messenger::DefineURLFilePath()
 	{
 		std::string fnl_file_path;
-		std::string	vld_location;
+		std::string	valid_location;
 		bool		file_found = false;
+
+		printf(PURPLE"Messenger::DefineURLFilePath()\n"NORM); //TODO: удалить
 
 		SetValidLocations();
 
 		for (std::map<int, std::string>::iterator i = _valid_locations.begin();
 			i != _valid_locations.end(); i++)
 		{
-			vld_location = (*i).second;
-			std::string file_name_after_slash = &_file_path[_file_path.find("/")];
-			fnl_file_path = _root_dir;
+			valid_location = (*i).second;
 
-			if (file_name_after_slash.find_last_of(".") != std::string::npos) // если в искомом пути есть расширение файла
-				fnl_file_path += _file_path;
-			else
-				fnl_file_path += vld_location;
+			fnl_file_path = ConstructFullPath(valid_location);
 
-			printf("file_path: %s\n", fnl_file_path.c_str());
-			printf("file_path_slash: %s\n", file_name_after_slash.c_str());
-
-			// если в искомом пути и валидном location нет расширения файла
-			if (file_name_after_slash.find_last_of(".") == std::string::npos
-				&& (vld_location).find_last_of(".") == std::string::npos)
-				fnl_file_path += ("/" + _web_page_name);
-			printf("Final path: %s\n", fnl_file_path.c_str());
+			printf("Final path: %s\n", fnl_file_path.c_str());	//TODO: удалить
 			std::ifstream file;
 			file.open(fnl_file_path);
 			file.close();
@@ -123,7 +176,7 @@ namespace ft
 			fnl_file_path.clear();
 		else
 		{
-			printf("Messenger::SetValidLocations\n");
+			printf(PURPLE"Messenger::SetValidLocations\n"NORM);
 			printf("%s\n", (PURPLE"Final Path: "NORM + fnl_file_path).c_str());
 		}
 		return (fnl_file_path);
@@ -135,15 +188,14 @@ namespace ft
 		std::string	http_code = "200 OK";
 		std::string file_path = DefineURLFilePath();
 
-		printf("Messenger::SendResponse()\n");
-		printf("FILE_PATH before empty(): '%s'\n", file_path.c_str());
+		printf(PURPLE"Messenger::SendResponse()\n"NORM);	//TODO: удалить
 		if (file_path.empty())
 		{
 			http_code = "404 Not Found";
 			file_buffer = ReadFile("./resources/404.html", "r");
 			if (file_buffer.empty())
 			{
-				printf("Messenger::SendResponse\n");
+				printf(PURPLE"Messenger::SendResponse\n"NORM);
 				printf("\033[31mUnable to open 404.html! 😔 \033[0m\n");
 				throw std::runtime_error("\033[31mUnable to open 404.html! \033[0m\n");
 			}

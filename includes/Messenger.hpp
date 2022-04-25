@@ -42,6 +42,9 @@ namespace ft
 			std::vector<char>	ReadFile(std::string file_path, std::string read_method);
 			std::string			DefineURLFilePath();
 			void				SetValidLocations();
+			void				SetDataViaConfig();
+			std::string			GetRootByLocation(std::string &location_path);
+			std::string			ConstructFullPath(std::string valid_location);
 	};
 }
 
