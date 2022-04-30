@@ -46,9 +46,12 @@ void 	ServerKqueue::Init_Serv()
 int	ServerKqueue::WaitEvent()
 {
 	bzero(evList, sizeof(evList));
+	struct timespec ts;
+	ts.tv_sec = 3;
+	ts.tv_nsec = 0;
 
 	Logger(BLUE, "Wait kevent...");
-	new_events = kevent(_kq_fd, NULL, 0, evList, KQUEUE_SIZE, NULL);
+	new_events = kevent(_kq_fd, NULL, 0, evList, KQUEUE_SIZE, &ts);
 	if (new_events == -1)
 		ServerError("kevent");
 
@@ -102,7 +105,7 @@ int ServerKqueue::CheckAccept()
 	client_fd = Accept();
 	if (client_fd == -1)
 	{
-		ServerError("CheckAccept");
+		//ServerError("CheckAccept");
 		return -1;
 	}
 	AddFd(client_fd);

@@ -87,6 +87,7 @@ int AbstractServerApi::Create_socket()
 
 
 	std::cout << GREEN << "Socket fd(" <<  _server_fd << ") successfully created ✅ " << NORM << "\n";
+	fcntl(_server_fd, F_SETFL, O_NONBLOCK);
 	return (_server_fd);
 }
 
@@ -163,7 +164,7 @@ int	AbstractServerApi::Accept()
 	client_fd = accept(_server_fd, (struct sockaddr *)&clientaddr, (socklen_t *)&len);
 	if (client_fd == -1)
 	{
-		ServerError("Accept");
+		//ServerError("Accept");
 		return (-1);
 	}
 

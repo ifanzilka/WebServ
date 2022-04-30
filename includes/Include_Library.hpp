@@ -16,4 +16,6 @@
 #include "parse_config/ServerData.hpp"
 
 
+#include "ServerExceptions.hpp"
+
 #endif

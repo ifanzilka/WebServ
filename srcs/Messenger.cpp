@@ -2,14 +2,13 @@
 #include <sys/socket.h>
 #include <exception>
 
-#include "./server/Color.hpp"
 
 Messenger::Messenger(ServerData &server_data)
 	: _server_data(server_data), _web_page_name("index.html"),
 		_root_dir("./resources")
 {
-	SetDataViaConfig();
 	_client_data = new HttpData();
+	_status_code = "200 OK";
 }
 
 
@@ -18,71 +17,57 @@ Messenger::~Messenger()
 	delete _client_data;
 }
 
-void Messenger::SetDataViaConfig()
+void Messenger::CollectDataForResponse()
 {
-
-}
-
-void Messenger::SetClientFd(const int client_fd)
-{
-	_client_data->_client_fd = client_fd;
-}
-
-int Messenger::SetRequest(const int client_fd, std::string request)
-{
-	int rv = 1;
-	RequestParser requestParser = RequestParser();
-
-	if (request.empty()
-		|| (_client_data->_http_method = requestParser.GetHttpMethod(request)).empty())
-		rv = -1;
-	else
-	{
-		SetClientFd(client_fd);
-		_client_data->_file_path = requestParser.GetFilePath(request);
-		//TODO: убедиться в том, что версия HTTP протокола нам не нужна
-		// (строка ниже удаляет эту информацию)
-		request.erase(0, request.find("\n") + 1);
-		_client_data->_headers = requestParser.GetHeaders(request);
-
-		SendResponse();
-	}
-	return (rv);
-}
-
-void Messenger::SendResponse()
-{
-	std::vector<char> file_buffer;
-	std::string	http_code = "200 OK";
 	std::string file_path = DefineURLFilePath();
 
 	printf(PURPLE"Messenger::SendResponse()\n"NORM);	//TODO: удалить
 	if (file_path.empty())
 	{
-		http_code = "404 Not Found";
-		file_buffer = ReadFile("./resources/404.html", "r");
-		if (file_buffer.empty())
-		{
-			printf(PURPLE"Messenger::SendResponse\n"NORM);
-			printf("\033[31mUnable to open 404.html! 😔 \033[0m\n");
-			throw std::runtime_error("\033[31mUnable to open 404.html! \033[0m\n");
-		}
+		_status_code = "404 Not Found";
+		_file_data = ReadFile("./resources/404.html", "r");
+		if (_file_data.empty())
+			throw RequestException(500, "Unable to open 404 PAGE!");
 	}
 	else
-		file_buffer = ReadFile(file_path, "r"); //TODO сделать распределение по типам файла (html, img, video)
+		_file_data = ReadFile(file_path, "r"); //TODO сделать распределение по типам файла (html, img, video)
+}
+
+void Messenger::StartMessaging(const int client_fd, std::string request_text)
+{
+	try
+	{
+		/** Объект испольуется для получения информации из принятого запроса () */
+		Request request = Request();
+		_client_data->_client_fd = client_fd;
+		request.FillDataByRequest(*_client_data, request_text);
+
+		CollectDataForResponse();
+	}
+	catch (std::exception &e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+
+	SendResponse();
+}
+
+void Messenger::SendResponse()
+{
 
 	if (_client_data->_http_method.compare("GET") == 0)
 	{
 		printf(PURPLE"GET METHOD\n"NORM);	//TODO: удалить
 		GetMethod getMethod = GetMethod();
-		getMethod.SendHttpResponse(_client_data->_client_fd, file_buffer, http_code, _client_data);
+		getMethod.SendHttpResponse(_client_data->_client_fd, _file_data, _status_code, _client_data);
 	}
 	else if (_client_data->_http_method.compare("POST") == 0)
 	{
 		printf(PURPLE"POST METHOD\n"NORM);	//TODO: удалить
 		PostMethod postMethod = PostMethod();
-		postMethod.SendHttpResponse(_client_data->_client_fd, file_buffer, http_code, _client_data);
+		postMethod.SendHttpResponse(_client_data->_client_fd, _file_data, _status_code, _client_data);
 	}
+	close(_client_data->_client_fd);
 }
 
 std::string Messenger::DefineURLFilePath()
@@ -136,6 +121,7 @@ void Messenger::SetValidLocations()
 	{
 		location = (*bgn).GetLocationPath();
 
+		// если в конфиге присутствует default location
 		if (location[0] == '/' && location.length() == 1)
 		{
 			if (_client_data->_file_path.length() == 1)

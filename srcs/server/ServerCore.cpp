@@ -43,7 +43,8 @@ void ServerCore::StartWebServer() const
 	}
 
 	std::cout << PURPLE"Use: " << "http://"<< serverApi->GetHostName() << ":" <<  serverApi->GetPort() << NORM << std::endl;
-	
+
+	int tmp = 0;
 	while (1)
 	{
 		int client_fd;
@@ -58,9 +59,18 @@ void ServerCore::StartWebServer() const
 		{
 			serverApi->ReadFd(client_fd);
 			//TODO: чтение может вернуть 0 или -1
-			std::string request = serverApi->GetClientRequest();
-			messenger.SetRequest(client_fd, request);
-			messenger.ClearValidLocations();
+			try
+			{
+				std::string request = serverApi->GetClientRequest();
+				if (request.empty())
+					throw RequestException(500, "ServerCore: serverApi->GetClientRequest() is empty!");
+				messenger.StartMessaging(client_fd, request);
+				messenger.ClearValidLocations();
+			}
+			catch (std::exception &e)
+			{
+				std::cout << e.what() << std::endl;
+			}
 			continue;
 		}
 	}
