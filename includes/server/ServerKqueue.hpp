@@ -18,10 +18,8 @@
 
 class ServerData;
 
-namespace ft
+class ServerKqueue: public AbstractServerApi
 {
-	class ServerKqueue: public AbstractServerApi
-	{
 	public:
 
 		/* Constructor */
@@ -29,7 +27,7 @@ namespace ft
 		ServerKqueue(std::string ipaddr, int port);
 		ServerKqueue(const char *ipaddr, int port);
 
-		virtual int			WaitEvent();		
+		virtual int			WaitEvent();
 		virtual int			CheckAccept();
 		virtual	int 		CheckRead();
 		//virtual int 		CheckWrite();
@@ -38,7 +36,7 @@ namespace ft
 		/* Destructor */
 		virtual ~ServerKqueue();
 
-		
+
 	private:
 		struct kevent 	evList[KQUEUE_SIZE];
 		int	 			new_events;
@@ -46,16 +44,15 @@ namespace ft
 
 		/* Для макроса */
 		struct kevent evSet;
-		
+
 		/* Очередь */
 		int			_kq_fd;
 
 
 		/* Init */
 		void 	Init_Serv();
-		void 	AddFd(int fd);	
+		void 	AddFd(int fd);
 		void	RemoteFd(int client_fd);
-	};
-}
+};
 
 #endif

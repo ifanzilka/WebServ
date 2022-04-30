@@ -3,23 +3,23 @@
 GetMethod::GetMethod() {}
 GetMethod::~GetMethod() {}
 
-int GetMethod::SendHttpResponse(int client_fd, std::vector<char> &file_buffer, std::string _http_code)
+int GetMethod::SendHttpResponse(int client_fd, std::vector<char> &file_buffer,
+	std::string _http_code, HttpData *_client_data)
 {
 	int bytes_written = 0;
 	std::string http_version = "HTTP/1.1 ";
 	std::string http_code = _http_code + "\n";
 
 	//TODO добавить определение Content-Type и Content-Length
-	std::string header(http_version + http_code + "Content-Type: text\nContent-Length: ");
+//	std::string header(http_version + http_code + "Content-Type: text\nContent-Length: ");
+	std::string header(http_version + http_code);
 
-//	std::string header("HTTP/1.1 200 OK\nContent-Type: video/mp4\nContent-Length: ");
-//	header += file_buffer.size();
-//	header += "\nAccept-Ranges: bytes\n";
-//	header += "Connection: close";
-//	header += "\n\n";
+	header += "Content-Type: text/html\n";
+	header += "Connection: keep-alive\n";
 
-	header += file_buffer.size();
 	header += "\n\n";
+
+//	std::cout << header << std::endl;
 
 	bytes_written += send(client_fd, &header.c_str()[0], header.size(), 0);
 

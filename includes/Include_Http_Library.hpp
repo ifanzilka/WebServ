@@ -7,6 +7,6 @@
 
 #include "http/HttpMethodApi.hpp"
 #include "http/GetMethod.hpp"
-
+#include "http/PostMethod.hpp"
 
 #endif

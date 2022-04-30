@@ -10,10 +10,8 @@
 #include <map>		/* map	*/
 #include <unistd.h> /* write */
 
-namespace ft
+class ServerSelect: public AbstractServerApi
 {
-	class ServerSelect: public AbstractServerApi
-	{
 	public:
 
 		/* Constructors */
@@ -42,8 +40,6 @@ namespace ft
 		void 	Init_Serv();
 		void	AddFd(int client_fd);
 		void	RemoteFd(int client_fd);
-	
-	};
-}
+};
 
 #endif

@@ -1,15 +1,13 @@
-#ifndef GETMETHOD_HPP
-#define GETMETHOD_HPP
+#ifndef POSTMETHOD_HPP
+#define POSTMETHOD_HPP
 
 #include "HttpMethodApi.hpp"
 
-#include "../Messenger.hpp"
-
-class GetMethod : public HttpMethodApi
+class PostMethod : public HttpMethodApi
 {
 	public:
-		GetMethod();
-		virtual		~GetMethod();
+		PostMethod();
+		virtual		~PostMethod();
 		virtual		int SendHttpResponse(int client_fd, std::vector<char> &file_buffer,
 			std::string _http_code, HttpData *_client_data);
 	private:

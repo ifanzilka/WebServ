@@ -7,19 +7,16 @@
 
 #include <vector>
 
-
-namespace ft
+class ServerPoll: public AbstractServerApi
 {
-	class ServerPoll: public AbstractServerApi
-	{
 	public:
 
 		/* Constructor */
 		ServerPoll(int port);
 		ServerPoll(std::string &ipaddr, int port);
 		ServerPoll(const char *ipaddr, int port);
-		
-		virtual int			WaitEvent();		
+
+		virtual int			WaitEvent();
 		virtual int			CheckAccept();
 		virtual	int 		CheckRead();
 		//virtual int 		CheckWrite();
@@ -37,7 +34,6 @@ namespace ft
 
 		void 	AddFd(int fd);
 		void	RemoteFd(int client_fd);
-	};
-}
+};
 
 #endif

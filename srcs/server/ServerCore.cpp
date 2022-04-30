@@ -20,20 +20,20 @@ void ServerCore::StartWebServer() const
 	std::string host = _server_data.GetHost();
 	int			port = _server_data.GetPort();
 
-	ft::Messenger messenger(_server_data);
-	ft::AbstractServerApi *serverApi = nullptr;
+	Messenger messenger(_server_data);
+	AbstractServerApi *serverApi = nullptr;
 
 	#ifdef KQUEUE
 		std::cout << "KQUEUE\n" << std::endl;
-		serverApi = new ft::ServerKqueue(host, port);
+		serverApi = new ServerKqueue(host, port);
 	#endif
 	#ifdef POLL
 		std::cout << "POLL\n" << std::endl;
-		serverApi = new ft::ServerPoll(host, port);
+		serverApi = new ServerPoll(host, port);
 	#endif
 	#ifdef SELECT
 		std::cout << "SELECT\n" << std::endl;
-		serverApi = new ft::ServerSelect(host, port);
+		serverApi = new ServerSelect(host, port);
 	#endif
 
 	if (serverApi == nullptr)
