@@ -19,13 +19,19 @@
 
 struct HttpData
 {
+	typedef std::unordered_map<std::string, std::string> headers_map;
+
 	int							_client_fd;
+	bool						_hasBody;
+	std::uint32_t				_body_length;
 	std::string 				_http_method;
 	std::string					_file_path;
 	std::string					_protocol;
 	//TODO: возможно надо чистить в ServerCore
 	// так же, как _valid_locations
-	std::unordered_map<std::string, std::string>	_headers;
+	headers_map					_headers;
+	std::string					_body;
+	std::string					_transfer_encoding;
 };
 
 class Messenger

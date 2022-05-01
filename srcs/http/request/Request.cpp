@@ -38,6 +38,15 @@ std::string Request::GetProtocol(std::string &request)
 	return (protocol);
 }
 
+size_t	Request::GetHeaderEndPos(std::string &client_request)
+{
+	size_t	pos;
+
+	pos = client_request.find("\n\r\n");
+	pos = (pos == std::string::npos) ? client_request.size() : pos;
+	return (pos);
+}
+
 void Request::FillHeadersMap(std::string &request, HttpData &client_data)
 {
 	size_t header_size = GetHeaderEndPos(request);
@@ -57,15 +66,25 @@ void Request::FillHeadersMap(std::string &request, HttpData &client_data)
 		request.erase(0, end_of_line + 1);
 		i += end_of_line;
 	}
+
 }
 
-size_t	Request::GetHeaderEndPos(std::string &client_request)
+void Request::CheckHeaders(HttpData &client_data)
 {
-	size_t	pos;
+	std::unordered_map<std::string, std::string>::iterator var_it;
 
-	pos = client_request.find("\n\r\n");
-	pos = (pos == std::string::npos) ? client_request.size() : pos;
-	return (pos);
+	if (client_data._headers.find("Host") == client_data._headers.end())
+		throw RequestException(400, "BadRequest");
+	var_it = client_data._headers.find("Content-Length");
+	if (var_it != client_data._headers.end())
+	{
+		client_data._hasBody = true;
+		client_data._body_length = static_cast<std::uint32_t>(std::atol(var_it->second.c_str()));
+		std::cout << "CheckHeaders. BodyLength: " << client_data._body_length << std::endl;
+	}
+	var_it = client_data._headers.find("Transfer-Encoding");
+	if (var_it != client_data._headers.end())
+		client_data._transfer_encoding = var_it->second;
 }
 
 void Request::CheckFirstLineSyntax(std::string &first_line)
@@ -111,6 +130,14 @@ void Request::CheckProtocol(const std::string &protocol_info)
 		throw RequestException(505, "Http Version Not Supported");
 }
 
+void Request::FillBodyData(HttpData &client_data, std::string &request_text)
+{
+	if (request_text.length() > client_data._body_length)
+		throw RequestException(413, "Request Entity Too Large");
+	client_data._body.append(request_text);
+	request_text.clear();
+}
+
 void Request::FillDataByRequest(HttpData &client_data, std::string request_text)
 {
 	std::string first_line = request_text.substr(0, request_text.find('\n'));
@@ -120,8 +147,17 @@ void Request::FillDataByRequest(HttpData &client_data, std::string request_text)
 	if (client_data._http_method.empty())
 		throw RequestException(405, "Method Not Allowed");
 	client_data._file_path = GetFilePath(request_text);
-	client_data._protocol = GetProtocol(request_text);
 
+	client_data._protocol = GetProtocol(request_text);
 	CheckProtocol(client_data._protocol);
+
 	FillHeadersMap(request_text, client_data);
+	CheckHeaders(client_data);
+
+	if (client_data._hasBody)
+	{
+		/** удаление остатка разделительной строки между заголовками и телом запроса */
+		request_text.erase(0, request_text.find('\n') + 1);
+		FillBodyData(client_data, request_text);
+	}
 }

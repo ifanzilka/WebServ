@@ -8,6 +8,9 @@ Messenger::Messenger(ServerData &server_data)
 		_root_dir("./resources")
 {
 	_client_data = new HttpData();
+	_client_data->_client_fd = 0;
+	_client_data->_hasBody = false;
+	_client_data->_body_length = 0;
 	_status_code = "200 OK";
 }
 
