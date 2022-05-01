@@ -38,20 +38,25 @@ std::string Request::GetProtocol(std::string &request)
 	return (protocol);
 }
 
-std::vector<std::string> Request::GetHeaders(std::string &request)
+void Request::FillHeadersMap(std::string &request, HttpData &client_data)
 {
-	std::vector<std::string> headers;
 	size_t header_size = GetHeaderEndPos(request);
-	size_t	end_of_line;
+	size_t end_of_line;
 
+	int colon_id = 0;
+	std::string new_line;
 	for (int i = 0; i < header_size; i++)
 	{
 		end_of_line = request.find("\n");
-		headers.push_back(request.substr(0, end_of_line - 1));
+		new_line = request.substr(0, end_of_line);
+		colon_id = new_line.find(':');
+		if (colon_id == std::string::npos)
+			throw RequestException(400, "BadRequest");
+		client_data._headers.insert(std::make_pair(new_line.substr(0, colon_id),
+			new_line.substr(colon_id + 2, new_line.length() - 1)));
 		request.erase(0, end_of_line + 1);
 		i += end_of_line;
 	}
-	return (headers);
 }
 
 size_t	Request::GetHeaderEndPos(std::string &client_request)
@@ -118,5 +123,5 @@ void Request::FillDataByRequest(HttpData &client_data, std::string request_text)
 	client_data._protocol = GetProtocol(request_text);
 
 	CheckProtocol(client_data._protocol);
-	client_data._headers = GetHeaders(request_text);
+	FillHeadersMap(request_text, client_data);
 }

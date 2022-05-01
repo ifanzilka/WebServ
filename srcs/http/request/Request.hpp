@@ -7,6 +7,8 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
+
 
 struct HttpData;
 
@@ -20,7 +22,7 @@ class Request
 		std::string					GetHttpMethod(std::string &request);
 		std::string					GetFilePath(std::string &request);
 		std::string					GetProtocol(std::string &request);
-		std::vector<std::string>	GetHeaders(std::string &request);
+		void						FillHeadersMap(std::string &request, HttpData &client_data);
 		size_t						GetHeaderEndPos(std::string &client_request);
 };
 

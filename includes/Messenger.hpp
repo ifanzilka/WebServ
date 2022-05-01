@@ -15,6 +15,8 @@
 
 #include "../srcs/http/request/Request.hpp"
 
+#include <unordered_map>
+
 struct HttpData
 {
 	int							_client_fd;
@@ -23,7 +25,7 @@ struct HttpData
 	std::string					_protocol;
 	//TODO: возможно надо чистить в ServerCore
 	// так же, как _valid_locations
-	std::vector<std::string>	_headers;
+	std::unordered_map<std::string, std::string>	_headers;
 };
 
 class Messenger
