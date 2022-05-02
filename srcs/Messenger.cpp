@@ -2,16 +2,19 @@
 #include <sys/socket.h>
 #include <exception>
 
-
 Messenger::Messenger(ServerData &server_data)
-	: _server_data(server_data), _web_page_name("index.html"),
-		_root_dir("./resources")
+	: _server_data(server_data),
+	_web_page_name("index.html"),
+	_root_dir("./resources")
 {
+	isClosedConnection = false;
+
 	_client_data = new HttpData();
 	_client_data->_client_fd = 0;
 	_client_data->_hasBody = false;
 	_client_data->_body_length = 0;
-	_status_code = "200 OK";
+	_status_code = 200;
+	_status_line = std::to_string(_status_code) + " OK"; // TODO: CHECK IT (c++ 11)
 }
 
 
@@ -27,7 +30,8 @@ void Messenger::CollectDataForResponse()
 	printf(PURPLE"Messenger::SendResponse()\n"NORM);	//TODO: удалить
 	if (file_path.empty())
 	{
-		_status_code = "404 Not Found";
+		_status_code = 404;
+		_status_line = std::to_string(_status_code) + " Not Found";  // TODO: CHECK IT (c++ 11)
 		_file_data = ReadFile("./resources/404.html", "r");
 		if (_file_data.empty())
 			throw RequestException(500, "Unable to open 404 PAGE!");
@@ -55,20 +59,27 @@ void Messenger::StartMessaging(const int client_fd, std::string request_text)
 	SendResponse();
 }
 
+//TODO:
+/**
+ * 1) Создать объект
+ * 2) Отправить ответ,
+ * 3) Убедиться в успешной отправке всех данных
+ * 4) Закрыть соединение и удалить объект
+ * */
+
 void Messenger::SendResponse()
 {
-
 	if (_client_data->_http_method.compare("GET") == 0)
 	{
 		printf(PURPLE"GET METHOD\n"NORM);	//TODO: удалить
 		GetMethod getMethod = GetMethod();
-		getMethod.SendHttpResponse(_client_data->_client_fd, _file_data, _status_code, _client_data);
+		getMethod.SendHttpResponse(_client_data->_client_fd, _file_data, _status_line, _client_data);
 	}
 	else if (_client_data->_http_method.compare("POST") == 0)
 	{
 		printf(PURPLE"POST METHOD\n"NORM);	//TODO: удалить
 		PostMethod postMethod = PostMethod();
-		postMethod.SendHttpResponse(_client_data->_client_fd, _file_data, _status_code, _client_data);
+		postMethod.SendHttpResponse(_client_data->_client_fd, _file_data, _status_line, _client_data);
 	}
 	close(_client_data->_client_fd);
 }

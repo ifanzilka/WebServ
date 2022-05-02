@@ -191,7 +191,7 @@ int	AbstractServerApi::ReadFd(int fd)
 	{
 		ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
 		if (ret == -1)
-			break;
+			return (-1);
 
 		buffer[ret] = 0;
 		_client_rqst_msg += buffer;

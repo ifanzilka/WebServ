@@ -41,6 +41,8 @@ class Messenger
 		~Messenger();
 		void	StartMessaging(const int client_fd, std::string request_text);
 		void	ClearValidLocations();
+
+		bool isClosedConnection;
 	private:
 		/** поля связанные с конфигом */
 		std::string						_web_page_name;
@@ -55,8 +57,9 @@ class Messenger
 	//			std::vector<std::string>	_body;
 
 		/** Поля для ответа клиенту*/
-		std::string 		_status_code;
-		std::vector<char> _file_data;
+		int					_status_code;
+		std::string			_status_line;
+		std::vector<char>	_file_data;
 
 		void				CollectDataForResponse();
 		void				SendResponse();
