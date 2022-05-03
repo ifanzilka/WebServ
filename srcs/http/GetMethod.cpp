@@ -11,11 +11,11 @@ int GetMethod::SendHttpResponse(int client_fd, std::vector<char> &file_buffer,
 	std::string http_code = _http_code + "\n";
 
 	//TODO добавить определение Content-Type и Content-Length
-//	std::string header(http_version + http_code + "Content-Type: text\nContent-Length: ");
-	std::string header(http_version + http_code);
+	std::string header(http_version + http_code + "Content-Type: text\nContent-Length: ");
+//	std::string header(http_version + http_code);
 
-	header += "Content-Type: text/html\n";
-	header += "Connection: keep-alive\n";
+//	header += "Content-Type: text/html\n";
+//	header += "Connection: keep-alive\n";
 
 	header += "\n\n";
 

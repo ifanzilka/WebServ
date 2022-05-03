@@ -68,9 +68,9 @@ void ParserConfig::FillServerData(ServerData &s, std::string &buffer)
 	}
 }
 
-// в буффер передается первая строчка каждого блока 'location'
-LocationData ParseLocations(std::ifstream &configfile, std::string &buffer, size_t next)
+std::pair<std::string, LocationData> ParseLocations(std::ifstream &configfile, std::string &buffer, size_t next)
 {
+	std::pair<std::string, LocationData> loc_pair;
 	int fst_space = buffer.find(' ');
 	int lst_space = buffer.rfind(' ');
 	LocationData l;
@@ -89,7 +89,8 @@ LocationData ParseLocations(std::ifstream &configfile, std::string &buffer, size
 			}
 			else
 				l.SetFullPath("", l.GetLocationPath());
-			return (l);
+			loc_pair = std::make_pair(l.GetLocationPath(), l);
+			return (loc_pair);
 		}
 		if ((next = buffer.find("root ") != std::string::npos))
 		{
@@ -134,19 +135,14 @@ LocationData ParseLocations(std::ifstream &configfile, std::string &buffer, size
 			l.SetAutoindex(
 					(buffer.substr(next, buffer.rfind(';') - next) == "on"));
 		}
-
 	}
-	// std::cout << "I`m here!!!1" << std::endl;
-	// if (!l.getLocationPath().empty() && !l.getRoot().empty() && l.getFullPath().empty())
-	// {
-	//         std::cout << "I`m here!!!2" << std::endl;
-	//         l.setFullPath(l.getRoot(), l.getLocationPath());
-	// }
-	return (l);
+	loc_pair = std::make_pair(l.GetLocationPath(), l);
+	return (loc_pair);
 }
 
 ServerData ParserConfig::ParseServer(std::ifstream &configfile, std::string &buffer)
 {
+	std::multimap<std::string, LocationData> map;
 	ServerData s;
 	size_t context_pos;
 
@@ -207,11 +203,4 @@ void ParserConfig::Parse(std::string const &name)
 			}
 		}
 	}
-
-//	for (std::map<int, ServerData>::iterator it = _servers.begin(); it != _servers.end(); ++it)
-//	{
-//		ServerData &tmp = it->second;
-//		std::cout << tmp << std::endl;
-//		std::cout << std::endl;
-//	}
 }

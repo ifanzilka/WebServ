@@ -41,14 +41,14 @@ const std::string &ServerData::GetHost() const
 	return (this->_host);
 }
 
-const std::vector<LocationData> &ServerData::GetLocationData() const
+const std::multimap<std::string, LocationData> &ServerData::GetLocationData() const
 {
 	return (this->_loc);
 }
 
-void ServerData::AddLocationData(const LocationData &locationData)
+void ServerData::AddLocationData(const std::pair<std::string, LocationData> loc_pair)
 {
-	_loc.push_back(locationData);
+	_loc.insert(loc_pair);
 }
 
 void ServerData::SetServerName(std::string const &name)
@@ -69,15 +69,17 @@ void ServerData::SetHost(std::string const &host)
 
 std::ostream &operator<<(std::ostream &out, const ServerData &tmp)
 {
-	std::vector<LocationData> loc;
+	std::multimap<std::string, LocationData> loc;
 	loc = tmp.GetLocationData();
 
 	out << "ServName: " << tmp.GetServerName() << std::endl;
 	out << "Port: " << tmp.GetPort() << std::endl;
 	out << "Host: " << tmp.GetHost() << std::endl;
 
-	for (std::vector<LocationData>::iterator it = loc.begin();
-		 it != loc.end(); ++it)
-		std::cout << *it << std::endl;
+	for (std::multimap<std::string, LocationData>::iterator it = loc.begin(); it != loc.end(); ++it)
+	{
+		std::cout << "PATH: " << it->first << std::endl <<
+			it->second << std::endl;
+	}
 	return (out);
 }

@@ -23,7 +23,8 @@ private:
 	/* Example:  127.0.0.1 нужно будет перевести в int возможно, если не использовать IFADDR_ANY */
 	std::string _host;
 
-	std::vector<LocationData> _loc; // массив локейшенов данного сервера со всеми данными
+	std::multimap<std::string, LocationData> _loc;
+//	std::vector<LocationData> _loc; // массив локейшенов данного сервера со всеми данными
 	// std::map<int, LocationData>    _loc; // массив локейшенов данного сервера со всеми данными
 
 	/* data */
@@ -37,9 +38,9 @@ public:
 	const std::string 				&GetServerName() const;
 	int 							GetPort() const;
 	const std::string 				&GetHost() const;
-	const std::vector<LocationData> &GetLocationData() const;
+	const std::multimap<std::string, LocationData> &GetLocationData() const;
 
-	void AddLocationData(LocationData const &locationData);
+	void AddLocationData(const std::pair<std::string, LocationData> loc_pair);
 
 	/* Setters */
 	void SetServerName(std::string const &name);

@@ -124,16 +124,23 @@ std::string Messenger::DefineURLFilePath()
 
 void Messenger::SetValidLocations()
 {
-	std::vector <LocationData> locations = _server_data.GetLocationData();
-	std::string location;
+	std::multimap<std::string, LocationData> locations = _server_data.GetLocationData();
 
-	std::vector<LocationData>::iterator bgn = locations.begin();
+	// TODO: удалить (проверка того, что локейшены пропарсились хорошо)
+//	for (std::multimap<std::string, LocationData>::iterator it = locations.begin();
+//		it != locations.end(); ++it)
+//	{
+//		std::cout << "PATH: " << it->first << std::endl <<
+//				  it->second << std::endl;
+//	}
+	std::string location;
+	std::multimap<std::string, LocationData>::iterator bgn = locations.begin();
 
 	printf(PURPLE"Messenger::SetValidLocations\n"NORM); //TODO: удалить
 	printf("%s\n", (BLUE"Request Path: "NORM + _client_data->_file_path).c_str()); 	//TODO: удалить
 	for (; bgn != locations.end(); bgn++)
 	{
-		location = (*bgn).GetLocationPath();
+		location = bgn->second.GetLocationPath();
 
 		// если в конфиге присутствует default location
 		if (location[0] == '/' && location.length() == 1)
@@ -145,9 +152,9 @@ void Messenger::SetValidLocations()
 		}
 		else if (_client_data->_file_path != "/" && location.find(&_client_data->_file_path[1]) != std::string::npos)
 		{
-			if ((*bgn).IsExactPath() && _client_data->_file_path != location)
+			if (bgn->second.IsExactPath() && _client_data->_file_path != location)
 				continue;
-			else if (!(*bgn).IsExactPath() && _client_data->_file_path != location)
+			else if (!bgn->second.IsExactPath() && _client_data->_file_path != location)
 				_valid_locations.insert(std::make_pair(2, location));
 			else
 				_valid_locations.insert(std::make_pair(1, location));
@@ -164,15 +171,15 @@ void Messenger::SetValidLocations()
 
 std::string Messenger::GetRootByLocation(std::string &location_data)
 {
-	std::vector <LocationData> locations = _server_data.GetLocationData();
+	std::multimap<std::string, LocationData> locations = _server_data.GetLocationData();
 	std::string	root;
 
-	std::vector<LocationData>::iterator bgn = locations.begin();
+	std::multimap<std::string, LocationData>::iterator bgn = locations.begin();
 	for (; bgn != locations.end(); bgn++)
 	{
-		if ((*bgn).GetLocationPath() == location_data)
+		if (bgn->first == location_data)
 		{
-			root = (*bgn).GetRoot();
+			root = bgn->second.GetRoot();
 			break;
 		}
 	}
