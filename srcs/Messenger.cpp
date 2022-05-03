@@ -224,11 +224,11 @@ std::string Messenger::ConstructFullPath(std::string valid_location)
 	return (fnl_file_path);
 }
 
-std::vector<char> Messenger::ReadFile(std::string file_path, std::string read_method)
+std::string Messenger::ReadFile(std::string file_path, std::string read_method)
 {
 	FILE	*file;
 	size_t	file_size;
-	std::vector<char>	buffer;
+	std::string	buffer;
 
 	file = fopen(file_path.c_str(), read_method.c_str());
 	if (file != nullptr)

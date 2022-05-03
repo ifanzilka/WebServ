@@ -3,7 +3,7 @@
 GetMethod::GetMethod() {}
 GetMethod::~GetMethod() {}
 
-int GetMethod::SendHttpResponse(int client_fd, std::vector<char> &file_buffer,
+int GetMethod::SendHttpResponse(int client_fd, std::string &file_buffer,
 	std::string _http_code, HttpData *_client_data)
 {
 	int bytes_written = 0;

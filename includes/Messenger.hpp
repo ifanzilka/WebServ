@@ -59,11 +59,11 @@ class Messenger
 		/** Поля для ответа клиенту*/
 		int					_status_code;
 		std::string			_status_line;
-		std::vector<char>	_file_data;
+		std::string 		_file_data;
 
 		void				CollectDataForResponse();
 		void				SendResponse();
-		std::vector<char>	ReadFile(std::string file_path, std::string read_method);
+		std::string	ReadFile(std::string file_path, std::string read_method);
 		std::string			DefineURLFilePath();
 		void				SetValidLocations();
 		std::string			GetRootByLocation(std::string &location_path);
