@@ -4,6 +4,23 @@
 
 #include "Request.hpp"
 
+Request::Request(std::multimap<std::string, LocationData> &locations)
+		:	_allLocations(locations),
+			_location(nullptr),
+			_buffer(new char[RECV_BUFFER_SIZE + 1])
+{
+}
+
+Request::~Request()
+{
+	delete [] _buffer;
+}
+
+char	*Request::GetBuffer(void) const
+{
+	return (_buffer);
+}
+
 std::string Request::GetHttpMethod(std::string &request)
 {
 	std::string http_method;

@@ -4,6 +4,8 @@
 
 Messenger::Messenger(ServerData &server_data)
 	: _server_data(server_data),
+	_request(server_data.GetLocationData()),
+	_response(nullptr),
 	_web_page_name("index.html"),
 	_root_dir("./resources")
 {
@@ -40,14 +42,15 @@ void Messenger::CollectDataForResponse()
 		_file_data = ReadFile(file_path, "r"); //TODO сделать распределение по типам файла (html, img, video)
 }
 
-void Messenger::StartMessaging(const int client_fd, std::string request_text)
+
+void Messenger::StartMessaging(const int client_fd, std::string request_msg)
 {
 	try
 	{
 		/** Объект испольуется для получения информации из принятого запроса () */
-		Request request = Request();
+//		Request request = Request();
 		_client_data->_client_fd = client_fd;
-		request.FillDataByRequest(*_client_data, request_text);
+		_request.FillDataByRequest(*_client_data, request_msg);
 
 		CollectDataForResponse();
 	}

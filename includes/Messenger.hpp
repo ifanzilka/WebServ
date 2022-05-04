@@ -1,21 +1,7 @@
 #ifndef MESSENGER_HPP
 #define MESSENGER_HPP
 
-#include <unistd.h>
-#include <iostream>
-#include <string>
-#include <fstream>
-
-#include "./server/Color.hpp"
-#include "./ServerExceptions.hpp"
-
-#include "./parse_config/ServerData.hpp"
-
-//#include "Include_Http_Library.hpp"
-
-#include "../srcs/http/request/Request.hpp"
-
-#include <unordered_map>
+#include "Common_Header.hpp"
 
 struct HttpData
 {
@@ -61,9 +47,12 @@ class Messenger
 		std::string			_status_line;
 		std::string 		_file_data;
 
+		Request		_request;
+		Response	*_response;
+
 		void				CollectDataForResponse();
 		void				SendResponse();
-		std::string	ReadFile(std::string file_path, std::string read_method);
+		std::string			ReadFile(std::string file_path, std::string read_method);
 		std::string			DefineURLFilePath();
 		void				SetValidLocations();
 		std::string			GetRootByLocation(std::string &location_path);

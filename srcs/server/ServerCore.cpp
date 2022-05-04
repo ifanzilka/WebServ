@@ -44,8 +44,9 @@ void ServerCore::StartWebServer() const
 
 	std::cout << PURPLE"Use: " << "http://"<< serverApi->GetHostName() << ":" <<  serverApi->GetPort() << NORM << std::endl;
 
-	int tmp = 0;
 	ssize_t read_bytes = 0;
+	std::string request_msg;
+	int	status_code;
 	while (1)
 	{
 		int client_fd;
@@ -61,7 +62,7 @@ void ServerCore::StartWebServer() const
 			try
 			{
 				read_bytes = serverApi->ReadFd(client_fd);
-				//TODO: чтение может вернуть 0 или -1 - закрыть соединение при ошибке
+//				//TODO: чтение может вернуть 0 или -1 - закрыть соединение при ошибке
 				if (read_bytes == 0)
 				{
 					messenger.isClosedConnection = true;
@@ -69,10 +70,10 @@ void ServerCore::StartWebServer() const
 				else if (read_bytes == -1)
 					throw RequestException(502, "error during reading data with recv()");
 
-				std::string request = serverApi->GetClientRequest(); // возвращает _client_rqst_msg;
-				if (request.empty()) // если всё полученное сообщение пустое
+				request_msg = serverApi->GetClientRequest(); // возвращает _client_rqst_msg;
+				if (request_msg.empty()) // если всё полученное сообщение пустое
 					throw RequestException(500, "ServerCore: serverApi->GetClientRequest() is empty!");
-				messenger.StartMessaging(client_fd, request);
+				messenger.StartMessaging(client_fd, request_msg);
 				messenger.ClearValidLocations();
 			}
 			catch (std::exception &e)

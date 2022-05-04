@@ -41,7 +41,7 @@ const std::string &ServerData::GetHost() const
 	return (this->_host);
 }
 
-const std::multimap<std::string, LocationData> &ServerData::GetLocationData() const
+std::multimap<std::string, LocationData> &ServerData::GetLocationData()
 {
 	return (this->_loc);
 }
@@ -67,7 +67,7 @@ void ServerData::SetHost(std::string const &host)
 }
 
 
-std::ostream &operator<<(std::ostream &out, const ServerData &tmp)
+std::ostream &operator<<(std::ostream &out, ServerData &tmp)
 {
 	std::multimap<std::string, LocationData> loc;
 	loc = tmp.GetLocationData();

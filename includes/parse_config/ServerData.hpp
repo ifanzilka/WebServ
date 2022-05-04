@@ -38,7 +38,7 @@ public:
 	const std::string 				&GetServerName() const;
 	int 							GetPort() const;
 	const std::string 				&GetHost() const;
-	const std::multimap<std::string, LocationData> &GetLocationData() const;
+	std::multimap<std::string, LocationData> &GetLocationData();
 
 	void AddLocationData(const std::pair<std::string, LocationData> loc_pair);
 
