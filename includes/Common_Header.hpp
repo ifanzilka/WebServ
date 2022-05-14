@@ -1,9 +1,14 @@
 #ifndef COMMON_HEADER_HPP
 #define COMMON_HEADER_HPP
 
-#define RECV_BUFFER_SIZE	2048
+#define RECV_BUFFER_SIZE	4096
 #define SEND_BUFFER_SIZZ	2046
 
+#define CR				"\r"
+#define LF				"\n"
+#define CRLF			"\r\n"
+
+//#include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
 #include <string>

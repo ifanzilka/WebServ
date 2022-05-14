@@ -2,14 +2,13 @@
 #include <sys/socket.h>
 #include <exception>
 
-#define	BUFFER_SIZE_RECV	4096
-
 Messenger::Messenger(ServerData &server_data)
 	: _server_data(server_data),
 	_request(server_data.GetLocationData()),
 	_response(nullptr),
 	_web_page_name("index.html"),
-	_root_dir("./resources")
+	_root_dir("./resources"),
+	_toServe(false)
 {
 	connectionIsClosed = false;
 
@@ -47,10 +46,9 @@ void Messenger::CollectDataForResponse()
 // TODO: сделать bool возврат
 void Messenger::StartMessaging(const int client_fd, std::string request_msg)
 {
-	char buffer[BUFFER_SIZE_RECV];
 	size_t read_bytes = 0;
 
-	read_bytes = recv(client_fd, buffer, BUFFER_SIZE_RECV, 0);
+	read_bytes = recv(client_fd, this->_request.GetBuffer(), RECV_BUFFER_SIZE, 0);
 	if (read_bytes == 0)
 	{
 		connectionIsClosed = true;
@@ -64,16 +62,22 @@ void Messenger::StartMessaging(const int client_fd, std::string request_msg)
 		/** Объект испольуется для получения информации из принятого запроса () */
 //		Request request = Request();
 		_client_data->_client_fd = client_fd;
-		_request.FillDataByRequest(*_client_data, std::string(buffer));
+		_toServe = _request.saveRequestData(read_bytes);
+		// TODO: вывод статистики парсинга
+		_request.PrintAllRequestData();
+//		_request.FillDataByRequest(*_client_data, std::string(buffer));
 
-		CollectDataForResponse();
+//		CollectDataForResponse();
 	}
-	catch (std::exception &e)
+	catch (RequestException &e)
 	{
+		_toServe = true;
+		std::cout << "REQUEST ERROR\n";
+		_request.setErrorStatus(e.getStatus());
 		std::cout << e.what() << std::endl;
 	}
 
-	SendResponse();
+//	SendResponse();
 }
 
 //TODO:

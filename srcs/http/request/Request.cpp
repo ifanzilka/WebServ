@@ -1,15 +1,16 @@
-//
-// Created by Josephine Beregond on 4/30/22.
-//
-
 #include "Request.hpp"
 
 Request::Request(std::multimap<std::string, LocationData> &locations)
 		:	_allLocations(locations),
 			_location(nullptr),
-			_buffer(new char[RECV_BUFFER_SIZE + 1])
-{
-}
+			_bodySize(0),
+			_chunkSize(0),
+			_parseState(START_LINE),
+			_buffer(new char[RECV_BUFFER_SIZE + 1]),
+			_errorStatus(0),
+			_isReqDone(false),
+			_isChunkSize(false)
+{}
 
 Request::~Request()
 {
@@ -18,163 +19,335 @@ Request::~Request()
 
 char	*Request::GetBuffer(void) const
 {
-	return (_buffer);
+	return _buffer;
 }
 
-std::string Request::GetHttpMethod(std::string &request)
+void	Request::setErrorStatus(const int s)
 {
-	std::string http_method;
-	size_t pos;
-
-	pos = request.find(" ");
-	http_method = request.substr(0, pos);
-	request.erase(0, ++pos);
-	if (http_method.compare("GET") != 0 && http_method.compare("POST") != 0
-		&& http_method.compare("DELETE") != 0)
-		http_method.resize(0);
-	return (http_method);
+	_errorStatus = s;
 }
 
-std::string Request::GetFilePath(std::string &request)
+void	Request::parsePercent(std::string &strRef)
 {
-	std::string file_path;
-	size_t pos;
+	std::stringstream	ss;
+	std::string			tmp;
+	int					c;
 
-	pos = request.find(" ");
-	file_path = request.substr(0, pos);
-	request.erase(0, ++pos);
-	return (file_path);
-}
-
-std::string Request::GetProtocol(std::string &request)
-{
-	std::string protocol;
-
-	protocol = request.substr(0, request.find("\n") - 1);
-	request.erase(0, request.find("\n") + 1);
-	return (protocol);
-}
-
-size_t	Request::GetHeaderEndPos(std::string &client_request)
-{
-	size_t	pos;
-
-	pos = client_request.find("\n\r\n");
-	pos = (pos == std::string::npos) ? client_request.size() : pos;
-	return (pos);
-}
-
-void Request::FillHeadersMap(std::string &request, HttpData &client_data)
-{
-	size_t header_size = GetHeaderEndPos(request);
-	size_t end_of_line;
-
-	int colon_id = 0;
-	std::string new_line;
-	for (int i = 0; i < header_size; i++)
+	for (std::size_t i = 0; i < strRef.length(); i++)
 	{
-		end_of_line = request.find("\n");
-		new_line = request.substr(0, end_of_line);
-		colon_id = new_line.find(':');
-		if (colon_id == std::string::npos)
-			throw RequestException(400, "BadRequest");
-		client_data._headers.insert(std::make_pair(new_line.substr(0, colon_id),
-			new_line.substr(colon_id + 2, new_line.length() - 1)));
-		request.erase(0, end_of_line + 1);
-		i += end_of_line;
-	}
-
-}
-
-void Request::CheckHeaders(HttpData &client_data)
-{
-	std::unordered_map<std::string, std::string>::iterator var_it;
-
-	if (client_data._headers.find("Host") == client_data._headers.end())
-		throw RequestException(400, "BadRequest");
-	var_it = client_data._headers.find("Content-Length");
-	if (var_it != client_data._headers.end())
-	{
-		client_data._hasBody = true;
-		client_data._body_length = static_cast<std::uint32_t>(std::atol(var_it->second.c_str()));
-		std::cout << "CheckHeaders. BodyLength: " << client_data._body_length << std::endl;
-	}
-	var_it = client_data._headers.find("Transfer-Encoding");
-	if (var_it != client_data._headers.end())
-		client_data._transfer_encoding = var_it->second;
-}
-
-void Request::CheckFirstLineSyntax(std::string &first_line)
-{
-	int spaces = 0;
-	int	ind = 0;
-
-	/** Проверка на валидность первого слеша */
-	ind = first_line.find_first_of(" /");
-	if (ind != 0 && first_line[ind - 1] == ' ')
-		throw RequestException(400, "BadRequest");
-	/** Проверка на кол-во пробелов в строке */
-	while (true)
-	{
-		ind = first_line.find_last_of(" ");
-		if (ind != std::string::npos)
+		if (strRef[i] == '%')
 		{
-			spaces++;
-			first_line.resize(ind);
+			try
+			{
+				ss << std::hex << strRef.substr(i + 1, 2);
+				ss >> c;
+				tmp = strRef.substr(i + 3);
+				strRef.erase(i);
+				strRef.push_back(static_cast<char>(c));
+				strRef.append(tmp);
+				ss.clear();
+			}
+			catch(std::exception &e)
+			{
+				throw RequestException(400, "Bad Request");
+			}
 		}
-		else
-			break;
+		else if (strRef[i] == '+')
+			strRef = strRef.substr(0, i) + " " + strRef.substr(i + 1);
 	}
-	if (spaces != 2)
-		throw RequestException(400, "BadRequest");
+	return;
 }
 
-void Request::CheckProtocol(const std::string &protocol_info)
+void	Request::parseUri(void)
 {
-	int slash = protocol_info.find('/');
+	std::size_t	pos;
 
-	/** Проверка на наличие слеша */
-	if (slash == std::string::npos)
-		throw RequestException(400, "BadRequest");
-	/** Проверка типа протокола */
-	std::string protocol_type = protocol_info.substr(0, slash);
-	if (protocol_type != "HTTP")
-		throw RequestException(400, "BadRequest");
-	/** Проверка версии протокола */
-	std::string protocol_version
-		= &protocol_info[slash + 1];
-	if (protocol_version != "1.1" && protocol_version != "1.0")
-		throw RequestException(505, "Http Version Not Supported");
-}
-
-void Request::FillBodyData(HttpData &client_data, std::string &request_text)
-{
-	if (request_text.length() > client_data._body_length)
-		throw RequestException(413, "Request Entity Too Large");
-	client_data._body.append(request_text);
-	request_text.clear();
-}
-
-void Request::FillDataByRequest(HttpData &client_data, std::string request_text)
-{
-	std::string first_line = request_text.substr(0, request_text.find('\n'));
-	CheckFirstLineSyntax(first_line);
-
-	client_data._http_method = GetHttpMethod(request_text);
-	if (client_data._http_method.empty())
-		throw RequestException(405, "Method Not Allowed");
-	client_data._file_path = GetFilePath(request_text);
-
-	client_data._protocol = GetProtocol(request_text);
-	CheckProtocol(client_data._protocol);
-
-	FillHeadersMap(request_text, client_data);
-	CheckHeaders(client_data);
-
-	if (client_data._hasBody)
+	pos = _uri.find("?");
+	if (pos != std::string::npos)
 	{
-		/** удаление остатка разделительной строки между заголовками и телом запроса */
-		request_text.erase(0, request_text.find('\n') + 1);
-		FillBodyData(client_data, request_text);
+		_query = _uri.substr(pos + 1);
+		_uri.erase(pos);
 	}
+
+	parsePercent(_uri);
+	return;
+}
+
+const LocationData	*Request::getLoc(void)
+{
+	std::string	tmp;
+	std::string	tmp1;
+	std::size_t	lastSlashPos;
+	std::size_t	len;
+	bool		isLastSlash;
+
+	isLastSlash = false;
+	if (_uri[_uri.length() - 1] != '/')
+	{
+		isLastSlash = true;
+		_uri.push_back('/');
+	}
+	lastSlashPos = _uri.find_last_of("/");
+	if (lastSlashPos == std::string::npos)
+		throw RequestException(400, "Bad Request");
+	tmp = _uri.substr(0, lastSlashPos);
+	len = std::count(_uri.begin(), _uri.end(), '/');
+	for (std::size_t i = 0; i < len; i++)
+	{
+		std::multimap<std::string, LocationData>::const_iterator j = _allLocations.begin();
+		for (; j != _allLocations.end(); j++)
+		{
+			if (!tmp.length())
+				tmp = "/";
+			(j->first != "/" and j->first[j->first.length() - 1] == '/') ?
+					tmp1 = j->first.substr(0, j->first.find_last_of("/")) : tmp1 = j->first;
+			if (tmp == tmp1) {
+				if (isLastSlash)
+					_uri.pop_back();
+				return &j->second;
+			}
+		}
+		lastSlashPos = tmp.find_last_of("/", lastSlashPos);
+		tmp = tmp.substr(0, lastSlashPos);
+	}
+	return nullptr;
+}
+
+void	Request::validateStartLine(void)
+{
+	_location = getLoc(); /** получение location под _uri */
+	if (!_location)
+		throw RequestException(404, "Not Found");
+//	std::vector<std::string>::const_iterator i = _location->GetMethods().begin();
+//	for (; i != _location->methods.end(); i++)
+//	{
+//		if (i->first == _method) {
+//			if (!i->second)
+//				throw RequestException(405, "Method Not Allowed");
+//			break;
+//		}
+//	}
+//	if (i == _location->methods.end())
+//		throw RequestException(400, "Bad Request");
+	//TODO: протокол может быть 1.0
+	if (_protocol != HTTP_PROTOCOL)
+		throw RequestException(505, "Http Version Not Supported");
+	_maxBodySize = _location->GetClientBufferBodySize();
+	parseUri();
+	return;
+}
+
+void	Request::saveStartLine(std::string startLine)
+{
+	std::size_t	lfPos;
+
+	if (!startLine.length())
+		throw RequestException(400, "Bad Request");
+	lfPos = startLine.find(' '); // поиск первого пробела из строки 'GET / HTTP/1.1'
+	if (lfPos == std::string::npos)
+		throw RequestException(400, "Bad Request");
+	_method = startLine.substr(0, lfPos); // вырезание типа метода (GET)
+	startLine.erase(0, skipWhiteSpaces(startLine, lfPos)); // удаление сохраненного
+
+	lfPos = startLine.find(' '); // поиск следующего пробела
+	if (lfPos == std::string::npos)
+		throw RequestException(400, "Bad Request");
+	_uri = startLine.substr(0, lfPos); // вырезание URI из строки '/ HTTP/1.1'
+	startLine.erase(0, skipWhiteSpaces(startLine, lfPos)); // удаление сохраненного
+	_protocol = startLine;
+	// удаление пустых символов
+	_protocol.erase(std::remove_if(_protocol.begin(),
+								   _protocol.end(), &isCharWhiteSpace), _protocol.end());
+
+	validateStartLine(); /** проверка стартовой линии */
+	_parseState = HEADER_LINE;
+}
+
+void	Request::saveHeaderLine(std::string headerLine)
+{
+	std::size_t	colonPos;
+	std::string	headerName;
+	std::string	headerValue;
+
+	headerLine.erase(std::remove_if(headerLine.begin(),
+									headerLine.end(), &isCharWhiteSpace), headerLine.end()); // удаление пробелов
+	if (!headerLine.length())
+	{
+		if (_headers.find("Host") == std::end(_headers)) // если нет "HOST"
+			throw RequestException(400, "Bad Request");
+		// если нет "Transfer-Encoding || Content-Length"
+		if (_headers.find("Transfer-Encoding") == std::end(_headers)
+			and _headers.find("Content-Length") == std::end(_headers))
+			_parseState = END_STATE;
+		else // иначе при наличии
+			_parseState = BODY_LINE;
+		return;
+	}
+
+	colonPos = headerLine.find(":");
+	if (colonPos == std::string::npos)
+		throw RequestException(400, "Bad Request");
+	headerName = headerLine.substr(0, colonPos);
+	headerValue = headerLine.substr(colonPos + 1);
+	_headers.insert(std::pair<std::string,
+			std::string>(headerName, headerValue));
+	if (headerName == "Content-Length") // получение размера тела
+		_bodySize = static_cast<std::uint32_t>(std::atol(headerValue.c_str()));
+	if (headerName == "Transfer-Encoding")
+		_transferEncoding = headerValue; // получение типа кодирования
+}
+
+void Request::saveStartLineHeaders(std::string &data)
+{
+	std::size_t	newLinePos;
+
+	newLinePos = data.find(LF);
+	while (newLinePos != std::string::npos and (_parseState != BODY_LINE and _parseState != END_STATE))
+	{
+		/** */
+		if (_parseState == START_LINE)
+		{
+			saveStartLine(data.substr(0, newLinePos));
+			data.erase(0, newLinePos + 1);
+		}
+		/**  */
+		if (_parseState == HEADER_LINE)
+		{
+			newLinePos = data.find(LF);
+			saveHeaderLine(data.substr(0, newLinePos));
+			data.erase(0, newLinePos + 1);
+		}
+		newLinePos = data.find(LF);
+	}
+}
+
+void	Request::parseChunkedBody(std::string &data)
+{
+	std::size_t	i;
+
+	i = 0;
+	while (i < data.length() and _chunkSize)
+	{
+		if (data[i] == '\n' and (i - 1 >= 0 and data[i - 1] == '\r'))
+			_body.push_back('\n');
+		else if (data[i] != '\r')
+			_body.push_back(data[i]);
+		i++;
+		_chunkSize--;
+	}
+	if (!_chunkSize)
+	{
+		_isChunkSize = false;
+		i += 2;
+	}
+	data.erase(0, i);
+}
+
+void	Request::parseChunkSize(std::string &data)
+{
+	std::stringstream	ss;
+	std::size_t			pos;
+
+	if (!data.length())
+	{
+		_parseState = END_STATE;
+		return;
+	}
+	pos = data.find(LF);
+	if (pos == std::string::npos)
+		return;
+	ss << std::hex << data.substr(0, pos);
+	ss >> _chunkSize;
+	if (!_chunkSize)
+		_parseState = END_STATE;
+	_isChunkSize = true;
+	data.erase(0, pos + 1);
+	return;
+}
+
+void	Request::saveChunkedBody(std::string &data)
+{
+	while (_parseState != END_STATE)
+	{
+		if (!_isChunkSize)
+			parseChunkSize(data);
+		if (_isChunkSize and _parseState != END_STATE)
+			parseChunkedBody(data);
+	}
+}
+
+void	Request::saveSimpleBody(std::string &data)
+{
+	std::size_t	bodySize;
+
+	bodySize = static_cast<std::size_t>(std::atol(_headers["Content-Length"].c_str()));
+	if (bodySize > _maxBodySize)
+		throw RequestException(413, "Request Entity Too Large");
+	if (_body.length() + data.length() > _maxBodySize)
+		throw RequestException(413, "Request Entity Too Large");
+
+	_body.append(data);
+	data.clear();
+	if (_body.length() == bodySize)
+		_parseState = END_STATE;
+	return;
+}
+
+bool Request::saveRequestData(size_t data_size)
+{
+	std::string	data;
+
+	data = _tmpBuffer;
+
+	_buffer[data_size] = '\0';
+	data.append(_buffer, data_size);
+
+	if (_parseState == START_LINE or _parseState == HEADER_LINE)
+		saveStartLineHeaders(data);
+	if (_parseState == BODY_LINE)
+	{
+		if (_transferEncoding == "chunked")
+			saveChunkedBody(data);
+		else
+			saveSimpleBody(data);
+	}
+	_tmpBuffer = data;
+	if (_parseState == END_STATE)
+		_isReqDone = true;
+	return _isReqDone;
+}
+
+void Request::PrintAllRequestData()
+{
+	std::cout << "REQUEST DATA PARSING RESULT" << std::endl;
+
+	std::cout << "ParseState: " << (_parseState == END_STATE ? "END_STATE"
+		: (_parseState == BODY_LINE) ? "BODY_LINE"
+		: (_parseState == HEADER_LINE) ? "HEADER_LINE"
+		: (_parseState == START_LINE) ? "START_LINE" : "ERROR") << std::endl;
+	std::cout << "IsReqDone? : " << (_isReqDone == false ? "false" : "true") << std::endl;
+
+	std::cout << "ErrorStatus: " << _errorStatus << std::endl;
+
+	std::cout << "StarLine: " <<
+		_method << " " << _uri << " " << _protocol << std::endl;
+
+	std::cout << "=========================HEADERS=========================\n";
+	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+	{
+		std::cout << it->first << ":" << it->second << std::endl;
+	}
+	std::cout << "=========================================================\n\n";
+
+	std::cout << "=========================BODY=== BODYSIZE: " << _bodySize << " ========\n";
+	std::cout << _body << std::endl;
+	std::cout << "=========================BODY=========================\n\n";
+
+	std::cout << "Additional information: " << std::endl;
+	std::cout << "TransferEncoding: " << (_transferEncoding.empty() ? "empty" : _transferEncoding) << std::endl;
+	std::cout << "_maxBodySize: " << _maxBodySize << std::endl;
+	std::cout << "_chunkSize: " << _chunkSize << std::endl;
+	std::cout << "_isChunkSize: " << _isChunkSize << std::endl;
+	std::cout << "_query: " << (_query.empty() ? "empty" : _query) << std::endl;
+
 }

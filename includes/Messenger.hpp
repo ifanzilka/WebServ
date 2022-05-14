@@ -20,6 +20,8 @@ struct HttpData
 	std::string					_transfer_encoding;
 };
 
+class Response;
+
 class Messenger
 {
 	public:
@@ -30,6 +32,9 @@ class Messenger
 
 		bool	connectionIsClosed;
 	private:
+		bool										_toServe; // флаг обозначающий, что SaveRequestData закончен и можно отправлять данные
+
+
 		/** поля связанные с конфигом */
 		std::string						_web_page_name;
 		std::string						_root_dir;

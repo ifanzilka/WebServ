@@ -163,10 +163,10 @@ int ServerSelect::ReadFd(int fd)
 {
 	Logger(GREEN, "Readble is ready: fd(" + std::to_string(fd) + ") ✅ ");
 
-	char buffer[BUFFER_SIZE_RECV];
-	bzero(buffer, BUFFER_SIZE_RECV);
+	char buffer[RECV_BUFFER_SIZE];
+	bzero(buffer, RECV_BUFFER_SIZE);
 
-	int ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
+	int ret = recv(fd, buffer, RECV_BUFFER_SIZE - 1, 0);
 	if (ret == 0)
 	{
 		Logger(RED, "Disconnect  fd(" + std::to_string(fd) + ") ❌ ");
@@ -180,9 +180,9 @@ int ServerSelect::ReadFd(int fd)
 
 	Logger(PURPLE, "Recv read " + std::to_string(ret) + " bytes");
 	Logger(B_GRAY, "buf:" + _client_rqst_msg);
-	while (ret == BUFFER_SIZE_RECV - 1)
+	while (ret == RECV_BUFFER_SIZE - 1)
 	{
-		ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
+		ret = recv(fd, buffer, RECV_BUFFER_SIZE - 1, 0);
 		if (ret == -1)
 			break;
 

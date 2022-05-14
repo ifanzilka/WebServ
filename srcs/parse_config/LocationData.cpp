@@ -3,11 +3,9 @@
 
 LocationData::LocationData()
 {
-	//TODO: почитать про инициализацию bool переменных и почему
-	// без этого некорректно работают сеттеры
 	this->_autoindex = false;
 	this->_exact_path = false;
-	_client_buffer_body_size = 0;
+	_client_buffer_body_size = 100;
 }
 
 LocationData::~LocationData() {}

@@ -42,6 +42,7 @@ SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POL
 	srcs/Messenger.cpp srcs/server/ServerCore.cpp \
 	srcs/http/HttpMethodApi.cpp srcs/http/GetMethod.cpp \
 	srcs/http/PostMethod.cpp srcs/http/request/Request.cpp \
+	srcs/http/request/tools.cpp
 
 FLAGS = -D KQUEUE
 

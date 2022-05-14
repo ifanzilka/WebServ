@@ -32,7 +32,6 @@
 #define SERVER_PROTOCOL 	AF_INET 	//IpV4
 #define	SERVER_TYPE			SOCK_STREAM //TCP
 #define MAX_CONNECT_LISTEN 	15			//In Listen
-#define	BUFFER_SIZE_RECV	4096		//In Read Buffer !!!!( > 2)
 #define	BUFFER_SIZE_SEND	2			//
 
 #define LOGGER_ENABLE		0			//1 - ON, 0 - OFF
