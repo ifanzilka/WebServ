@@ -28,7 +28,7 @@ class Messenger
 		void	StartMessaging(const int client_fd, std::string request_text);
 		void	ClearValidLocations();
 
-		bool isClosedConnection;
+		bool	connectionIsClosed;
 	private:
 		/** поля связанные с конфигом */
 		std::string						_web_page_name;

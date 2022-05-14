@@ -173,39 +173,6 @@ int	AbstractServerApi::Accept()
 	return (client_fd);
 }
 
-int	AbstractServerApi::ReadFd(int fd)
-{
-	Logger(GREEN, "Readble is ready: fd(" + std::to_string(fd) + ") ✅ ");
-
-	char buffer[BUFFER_SIZE_RECV];
-	bzero(buffer, BUFFER_SIZE_RECV);
-
-	int ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
-
-	_client_rqst_msg.resize(0);
-	_client_rqst_msg += buffer;
-
-//		Logger(PURPLE, "Recv read " + std::to_string(ret) + " bytes");
-//		Logger(B_GRAY, "buff:" + _client_rqst_msg);
-	while (ret == BUFFER_SIZE_RECV - 1)
-	{
-		ret = recv(fd, buffer, BUFFER_SIZE_RECV - 1, 0);
-		if (ret == -1)
-			return (-1);
-
-		buffer[ret] = 0;
-		_client_rqst_msg += buffer;
-//			Logger(B_GRAY, "subbuf:" + std::string(buffer));
-//			Logger(PURPLE, "Replay Recv read " + std::to_string(ret) + " bytes");
-	}
-
-	Logger(GREEN, "Server read " + std::to_string(_client_rqst_msg.size()) + " bytes from a client ✅ ");
-	Logger(B_GRAY, _client_rqst_msg);
-
-	return (_client_rqst_msg.size());
-}
-
-
 void	AbstractServerApi::AddClient(int fd, struct sockaddr_in addrclient)
 {
 	Logger(GREEN, "Add client in vector ✅ ");

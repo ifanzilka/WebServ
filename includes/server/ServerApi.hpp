@@ -61,7 +61,7 @@ class AbstractServerApi
 		virtual int			CheckAccept() = 0;
 		virtual	int 		CheckRead() = 0;
 		//virtual int		CheckWrite() = 0;
-		virtual	int			ReadFd(int fd);
+//		virtual	int			ReadFd(int fd);
 
 		virtual std::string	GetClientRequest() const;
 

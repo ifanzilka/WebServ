@@ -61,18 +61,6 @@ void ServerCore::StartWebServer() const
 		{
 			try
 			{
-				read_bytes = serverApi->ReadFd(client_fd);
-//				//TODO: чтение может вернуть 0 или -1 - закрыть соединение при ошибке
-				if (read_bytes == 0)
-				{
-					messenger.isClosedConnection = true;
-				}
-				else if (read_bytes == -1)
-					throw RequestException(502, "error during reading data with recv()");
-
-				request_msg = serverApi->GetClientRequest(); // возвращает _client_rqst_msg;
-				if (request_msg.empty()) // если всё полученное сообщение пустое
-					throw RequestException(500, "ServerCore: serverApi->GetClientRequest() is empty!");
 				messenger.StartMessaging(client_fd, request_msg);
 				messenger.ClearValidLocations();
 			}
