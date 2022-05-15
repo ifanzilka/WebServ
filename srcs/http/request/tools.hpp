@@ -4,6 +4,7 @@
 #include "Common_Header.hpp"
 
 #include <sys/stat.h> // 'stat' struct
+#include <dirent.h>
 
 /** FOR IsDirOrFile */
 #define NOT_FOUND		0
@@ -16,8 +17,17 @@ class Request;
 /**
 * RESPONSE_DATA PART
 */
-std::uint8_t	isDirOrFile(std::string &path);
-std::string		putDelete(Request &request, uint32_t &statusCode);
+
+static std::string	buildPathToFile(std::string const &fullPath, const LocationData *location, std::string fileName);
+char	*filesListing(std::string const &path, uint64_t &bodySize, uint32_t &statusCode, const LocationData *location);
+std::map<int, std::string>	&error_map();
+std::string					ft_itoa(int x);
+char						*gen_def_page(uint32_t &statusCode, uint64_t &bodySize, const char *path, const LocationData *location);
+std::string					strUpper(const std::string &str);
+std::string					getExtension(std::string fPath);
+bool						urlInfo(std::string fPath, t_fileInfo *fStruct, std::ifstream &FILE);
+std::uint8_t				isDirOrFile(std::string &path);
+std::string					putDelete(Request &request, uint32_t &statusCode);
 
 /**
 * SAVE_REQUEST_DATA PART

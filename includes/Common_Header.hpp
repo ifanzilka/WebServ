@@ -17,6 +17,21 @@
 #include <map>
 #include <unordered_map>
 
+typedef enum	fileType
+{
+	DDIR  = 0,
+	FFILE  = 1,
+	NONEXIST = -1
+}	t_fileType;
+
+typedef struct s_fileInfo
+{
+	long long int	fLength;
+	t_fileType		fType;
+	std::string		fExtension;
+	int				fStatus;
+}		t_fileInfo;
+
 #include "./server/Color.hpp"
 #include "./ServerExceptions.hpp"
 

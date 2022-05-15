@@ -15,6 +15,10 @@ class Response
 		Response(Request &request);
 
 	private:
+		std::string	getErrorPage();
+		void	setErrorPages();
+
+		std::ifstream						_FILE;
 		bool								_autoindex;
 		const LocationData					*_reqLocation;
 		std::string							_url;
@@ -23,6 +27,7 @@ class Response
 		std::uint64_t						_bodySize;
 		uint32_t							_statusCode;
 		std::string							_contentType;
+		std::map<int, std::string>			_errorPages;
 };
 
 
