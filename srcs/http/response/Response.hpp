@@ -5,20 +5,24 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
+#include "Common_Header.hpp"
+
+class Request;
 
 class Response
 {
 	public:
+		Response(Request &request);
 
 	private:
-		std::uint32_t	_status_code;
-		std::string		_status_line;
-
-		std::string		_headers;
-		std::string		_http_method;
-
-		std::string		_body;
-		std::uint64_t	_body_len;
+		bool								_autoindex;
+		const LocationData					*_reqLocation;
+		std::string							_url;
+		std::string							_method;
+		std::map <std::string, std::string>	_reqHeaders;
+		std::uint64_t						_bodySize;
+		uint32_t							_statusCode;
+		std::string							_contentType;
 };
 
 

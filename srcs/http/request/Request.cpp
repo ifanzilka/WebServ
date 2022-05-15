@@ -27,6 +27,132 @@ void	Request::setErrorStatus(const int s)
 	_errorStatus = s;
 }
 
+uint32_t	Request::getErrorStatus(void) const
+{
+	return _errorStatus;
+}
+
+std::map<std::string, std::string>	&Request::getHeaders(void)
+{
+	return _headers;
+}
+
+std::string	Request::getMethod(void) const
+{
+	return _method;
+}
+
+const LocationData	*Request::getLocation(void) const
+{
+	return _location;
+}
+
+std::string	Request::getBody(void)
+{
+	return _body;
+}
+
+std::string	Request::validateUrl(std::string &fullPath, std::uint32_t &status, std::uint8_t mode)
+{
+	std::string	tmp;
+
+	std::cout << PURPLE"==============VALIDATE URL=============="NORM << std::endl;
+	std::cout << "FULL_PATH: " << fullPath << std::endl;	//TODO: удалить
+	std::cout << "Status: " << status << std::endl;	//TODO: удалить
+	std::cout << "MODE: " << (mode == NOT_FOUND ? "NOT_FOUND"
+		: mode == DIR_MODE ? "DIR_MODE"
+		: mode == FILE_MODE ? "FILE_MODE"
+		: mode == UNKNOWN_MODE ? "UKNOWN_MODE" : 0) << std::endl;	//TODO: удалить
+	std::cout << PURPLE"========================================="NORM << std::endl;
+
+	if (mode == DIR_MODE) /** DIRECTORY */
+	{
+		if (_method == "PUT")
+		{
+			status = 201;
+			return fullPath;
+		}
+		tmp = fullPath + "/" + _location->GetIndex(); // получение полного пути с страницей (index.html)
+		if (isDirOrFile(tmp) == FILE_MODE)
+		{
+			if (!access(tmp.c_str(), R_OK))
+				return (tmp); // возврат пути к файлу в дирректории
+		}
+		if (_location->IsAutoindex()) // если есть автоиндекс
+		{
+			status = 1;
+			return fullPath; // вернуть полный путь (location + _uri)
+		}
+		if (errno == EACCES)
+			status = 403;
+		else
+			status = 404;
+		return tmp;
+	}
+	else if (mode == FILE_MODE) /** FILE */
+	{
+		if (!access(fullPath.c_str(), R_OK))
+			return fullPath; // если файл доступен - вернуть весь путь
+		if (errno == EACCES)
+			status = 403;
+		else
+			status = 404;
+		status = 403;
+		return fullPath;
+	}
+	if (_method == "POST")
+		status = 201;
+	else
+		status = 404;
+	return fullPath;
+}
+
+/** получение полного пути location + _uri */
+std::string	Request::getUrl(std::uint32_t &status)
+{
+	std::string		fullPath;
+	std::uint8_t	mode;
+	std::string		tmp;
+
+	/** REDIRECT */
+	if (_location && (!_location->GetRedirect().empty()))
+	{
+		//TODO: добавить статус код для редиректа
+		status = 301;
+		return _location->GetRedirect();
+	}
+	status = 200;
+	fullPath = _location->GetRoot() + _uri;
+	// удаление лишних слешей
+	for (std::size_t i = 0; i < fullPath.length() - 1; i++)
+	{
+		if (fullPath[i] == '/' && fullPath[i + 1] == '/')
+			fullPath.erase(i + 1, 1);
+	}
+	// если последний символ в пути - слеш - удалить
+	if (fullPath[fullPath.length() - 1] == '/')
+		fullPath.pop_back();
+
+	//TODO: =----= УДАЛИТЬ
+	std::cout << PURPLE"==============GET_URL=============="NORM << std::endl;
+	std::cout << *_location << std::endl;
+	std::cout << "FullPath: " << fullPath << std::endl;
+
+	std::cout << PURPLE"==================================="NORM << std::endl;
+
+	//TODO: =----= УДАЛИТЬ
+	std::cout << BLUE"==============IsDirOrFile=============="NORM << std::endl;
+	mode = isDirOrFile(fullPath);
+	std::cout << BLUE"========================================"NORM << std::endl;
+	//TODO: проверить валидность открытия 404 страницы
+	if (mode == NOT_FOUND && _method != "POST" && _method != "PUT")
+	{
+		status = 404;
+		return "unknown url";
+	}
+	return (validateUrl(fullPath, status, mode));
+}
+
 void	Request::parsePercent(std::string &strRef)
 {
 	std::stringstream	ss;

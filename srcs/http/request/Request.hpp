@@ -22,6 +22,20 @@ class Request
 		Request(std::multimap<std::string, LocationData> &locations);
 		~Request();
 
+		/**
+		* RESPONSE_DATA PART
+		*/
+		std::string							getBody(void);
+		const LocationData					*getLocation() const;
+		std::string							validateUrl(std::string &fullPath, std::uint32_t &status, std::uint8_t mode);
+		std::string							getUrl(std::uint32_t &status);
+		std::string							getMethod(void) const;
+		std::map<std::string, std::string>	&getHeaders(void);
+		uint32_t							getErrorStatus(void) const;
+
+		/**
+		* SAVE_REQUEST_DATA PART
+		*/
 		void	PrintAllRequestData();
 		void	setErrorStatus(const int s);
 		void	saveSimpleBody(std::string &data);

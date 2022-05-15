@@ -65,6 +65,9 @@ void Messenger::StartMessaging(const int client_fd, std::string request_msg)
 		_toServe = _request.saveRequestData(read_bytes);
 		// TODO: вывод статистики парсинга
 		_request.PrintAllRequestData();
+
+		_response = new Response(_request); //TODO: delete _response
+
 //		_request.FillDataByRequest(*_client_data, std::string(buffer));
 
 //		CollectDataForResponse();
