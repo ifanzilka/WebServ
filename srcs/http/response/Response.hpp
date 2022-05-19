@@ -13,10 +13,23 @@ class Response
 {
 	public:
 		Response(Request &request);
+		~Response();
+		void SendResponse(int client_fd);
 
 	private:
+		char		*makeBody(int &readSize);
+		std::string makeHeaders();
+		std::string	makeStatusLine();
 		std::string	getErrorPage();
-		void	setErrorPages();
+		void		setErrorPages();
+
+		char*						 		_body;
+
+		std::uint64_t						_leftBytes; // для проверки вся ли информация записалась
+		std::string							_headers;
+		std::string							_statusLine;
+		std::string							_response;
+		bool								_inProc; // false в конце конструктора Response();
 
 		std::ifstream						_FILE;
 		bool								_autoindex;

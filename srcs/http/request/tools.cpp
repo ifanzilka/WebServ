@@ -92,6 +92,9 @@ std::string	ft_itoa(int x)
 	return (tmp);
 }
 
+
+//TODO: проверить корретность страницы ответа, ибо показываются лишние
+// символы из-за добавления 'video_ref'
 char	*gen_def_page(uint32_t &statusCode, uint64_t &bodySize,
 	const char *path, const LocationData *location)
 {

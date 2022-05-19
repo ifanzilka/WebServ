@@ -17,6 +17,8 @@
 #include <map>
 #include <unordered_map>
 
+#include <sys/socket.h>
+
 typedef enum	fileType
 {
 	DDIR  = 0,

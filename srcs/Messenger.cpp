@@ -46,6 +46,8 @@ void Messenger::CollectDataForResponse()
 // TODO: сделать bool возврат
 void Messenger::StartMessaging(const int client_fd, std::string request_msg)
 {
+	//TODO: добавить время начала процесса парсинга для хедеров
+
 	size_t read_bytes = 0;
 
 	read_bytes = recv(client_fd, this->_request.GetBuffer(), RECV_BUFFER_SIZE, 0);
@@ -67,7 +69,7 @@ void Messenger::StartMessaging(const int client_fd, std::string request_msg)
 		_request.PrintAllRequestData();
 
 		_response = new Response(_request); //TODO: delete _response
-
+		_response->SendResponse(client_fd);
 //		_request.FillDataByRequest(*_client_data, std::string(buffer));
 
 //		CollectDataForResponse();
