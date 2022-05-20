@@ -6,7 +6,9 @@
 #define RESPONSE_HPP
 
 #include "Common_Header.hpp"
+#include "CGI.hpp"
 
+class CGI;
 class Request;
 
 class Response
@@ -23,6 +25,16 @@ class Response
 		std::string	getErrorPage();
 		void		setErrorPages();
 
+		/**
+		* CGI PART
+		*/
+		pid_t								_pid;
+		int									*_cgiFd;
+		CGI									*_cgiPtr;
+
+		/**
+		* RESPONSE_DATA PART
+		*/
 		char*						 		_body;
 
 		std::uint64_t						_leftBytes; // для проверки вся ли информация записалась

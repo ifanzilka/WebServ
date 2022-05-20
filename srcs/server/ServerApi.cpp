@@ -153,7 +153,7 @@ int AbstractServerApi::Listen()
 
 int	AbstractServerApi::Accept()
 {
-	Logger(BLUE, "Accept...");
+	//Logger(BLUE, "Accept...");
 
 	struct sockaddr_in	clientaddr;
 	socklen_t 			len;

@@ -6,8 +6,10 @@
 
 Response::Response(Request &request) :
 	_body(nullptr),
-	_reqLocation(nullptr)
+	_reqLocation(nullptr),
+	_cgiPtr(nullptr)
 {
+	t_fileInfo file;
 	setErrorPages(); // TODO: заменить
 
 	_contentType = "text/html";
@@ -21,9 +23,53 @@ Response::Response(Request &request) :
 		_reqLocation = request.getLocation();
 		_autoindex = _statusCode == 1;
 	}
+
 	std::cout << "Response() after if() Status_code: " << _statusCode << std::endl; // TODO: удалить
 
-	if (_statusCode >= 400)
+	if (_statusCode < 399 && _statusCode != 1 && _method != "PUT" && _method != "DELETE")
+	{
+		urlInfo(_url, &file,  _FILE);
+		if (file.fType == DDIR)
+			file.fStatus = 404;
+		if ((file.fStatus < 200 || file.fStatus > 299) && _statusCode != 301)
+		{
+			_statusCode = file.fStatus;
+			_url = getErrorPage();
+			_contentType = "text/html";
+		}
+		else if (_statusCode != 301 && _method != "PUT" && _method != "DELETE")
+		{
+			int cgNum;
+			if ((cgNum = checkCgi(request.getLocation()->getCgi(), _url)) > 0)
+			{
+				_cgiPtr = new CGI(request, request.getLocation()->getCgi(), _FILE);
+				_contentType = file.fExtension;
+				try
+				{
+					_cgiFd =  _cgiPtr->initCGI(cgNum, _pid);
+				}
+				catch(RequestException &e)
+				{
+					std::cerr << e.what() << " due to " << strerror(errno) << std::endl;
+					_statusCode = 502;
+				}
+				_bodySize = file.fLength;
+				_contentType = file.fExtension;
+				_leftBytes = _bodySize;
+			}
+			else if (cgNum == -1)
+			{
+				_statusCode = 502;
+				_url = getErrorPage();
+			}
+			else
+			{
+				_bodySize = file.fLength;
+				_contentType = file.fExtension;
+			}
+		}
+	}
+	else
 		_url = getErrorPage();
 	_inProc = false;
 }
@@ -124,7 +170,7 @@ void Response::SendResponse(int client_fd)
 //	else if ( _FILE.is_open() ||  _statusCode != 200  || _autoindex /* || _cgiPtr->isReadable() */) //TODO: раскоментить
 	if ( _FILE.is_open() ||  _statusCode != 200  || _autoindex /* || _cgiPtr->isReadable() */) //TODO: раскоментить
 	{
-		std::cout << "WHAT\n" << std::endl;
+		std::cout << "WHAT\n" << std::endl; //TODO: удалить
 		int to_send, pos, tries;
 		res = 0, pos = 0, tries = 0;
 		makeBody(to_send);

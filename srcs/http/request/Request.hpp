@@ -23,6 +23,12 @@ class Request
 		~Request();
 
 		/**
+		* CGI PART
+		*/
+		std::string	getQueryString(void);
+		void		getUrlEncodedBody(std::map<std::string, std::string> &queryBody);
+
+		/**
 		* RESPONSE_DATA PART
 		*/
 		std::string							getBody(void);

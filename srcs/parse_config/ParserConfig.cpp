@@ -121,6 +121,7 @@ std::pair<std::string, LocationData> ParseLocations(std::ifstream &configfile, s
 		{
 			next += 14;
 			l.SetCgiExtension(buffer.substr(next, buffer.rfind(';') - next));
+			l.SetCgi(); // TODO: костыль
 		}
 		else if ((next = buffer.find("client_body_buffer_size ")) !=
 				 std::string::npos)

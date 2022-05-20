@@ -43,11 +43,13 @@ SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POL
 	srcs/http/HttpMethodApi.cpp srcs/http/GetMethod.cpp \
 	srcs/http/PostMethod.cpp srcs/http/request/Request.cpp \
 	srcs/http/response/Response.cpp \
-	srcs/http/request/tools.cpp
+	srcs/http/request/tools.cpp \
+	srcs/http/response/CGI.cpp
 
 FLAGS = -D KQUEUE
 
 all:			$(NAME)
+	$(CXX) -I$(INC_DIR) $(FLAGS) $(SRCS_MESSENGER) main5.cpp -o $(NAME)
 
 select:
 	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT) main2.cpp -o $(NAME)

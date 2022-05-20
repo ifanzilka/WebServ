@@ -50,12 +50,12 @@ int	ServerKqueue::WaitEvent()
 	ts.tv_sec = 3;
 	ts.tv_nsec = 0;
 
-	Logger(BLUE, "Wait kevent...");
+	//Logger(BLUE, "Wait kevent...");
 	new_events = kevent(_kq_fd, NULL, 0, evList, KQUEUE_SIZE, &ts);
 	if (new_events == -1)
 		ServerError("kevent");
 
-	Logger(B_GRAY, "kevent return " + std::to_string(new_events));
+	//Logger(B_GRAY, "kevent return " + std::to_string(new_events));
 	return (new_events);
 
 	// for (int i = 0; i < new_events; i++)
@@ -88,7 +88,7 @@ int	ServerKqueue::WaitEvent()
 /* Проверяю событие на Подключение если полюкчился возвращаю fd клиента иначе 0*/
 int ServerKqueue::CheckAccept()
 {
-	Logger(BLUE, "CheckAccept...");
+	//Logger(BLUE, "CheckAccept...");
 	int client_fd;
 
 	for (int i = 0; i < new_events; i++)

@@ -11,6 +11,13 @@ LocationData::LocationData()
 LocationData::~LocationData() {}
 LocationData::LocationData(const LocationData &cpy) { *this = cpy; }
 
+
+
+const std::multimap<std::string, std::string> &LocationData::getCgi() const
+{
+	return _cgi;
+}
+
 LocationData &LocationData::operator=(const LocationData &cpy)
 {
 	if (this != &cpy)
@@ -48,6 +55,10 @@ void LocationData::		SetAutoindex(bool autoindex) { this->_autoindex = autoindex
 void LocationData::		SetClientBufferBodySize(size_t body_size) { this->_client_buffer_body_size = body_size; }
 void LocationData::		SetCgiPath(std::string const &cgipath) { this->_cgi_path = cgipath; }
 void LocationData::		SetCgiExtension(std::string const &cgiextension) { this->_cgi_extension = cgiextension; }
+void LocationData::		SetCgi(void)
+{
+	_cgi.insert(std::make_pair(_cgi_extension, _cgi_path));  //TODO: костыль
+}
 void LocationData::		SetExactPath(bool exact_path) { this->_exact_path = exact_path; }
 void LocationData::		SetIndex(std::string const &index) { this->_index = index; }
 void LocationData::		SetLocationPath(std::string const &location) { this->_location_path = location; }

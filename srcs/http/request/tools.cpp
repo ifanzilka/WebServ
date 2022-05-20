@@ -1,5 +1,23 @@
 #include "tools.hpp"
 
+int  checkCgi(const std::multimap<std::string, std::string> &CGI, std::string fPath)
+{
+	int			res = 0;
+	std::string ext = "." + fPath.substr(fPath.find_last_of('.') + 1);
+
+	std::multimap<std::string, std::string>::const_iterator i = CGI.begin();
+	for (; i != CGI.end(); i++)
+	{
+		if (ext == i->first)
+		{
+			if (access(i->second.c_str(), X_OK))
+				return (-1);
+			res++;
+		}
+	}
+	return (res);
+}
+
 static std::string	buildPathToFile(std::string const &fullPath, const LocationData *location, std::string fileName)
 {
 	std::string	resultPath;

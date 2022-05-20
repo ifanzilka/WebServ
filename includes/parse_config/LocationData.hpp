@@ -15,6 +15,7 @@ class LocationData
 		// std::string 				_path;
 		std::string 				_root;
 		std::string 				_full_path;
+		std::multimap<std::string, std::string> _cgi;
 		std::string					_cgi_path;
 		std::string					_cgi_extension;
 		std::string 				_index;
@@ -43,6 +44,7 @@ class LocationData
 		size_t							GetClientBufferBodySize() const;
 		const std::string				&GetRoot() const;
 		const std::string				&GetFullPath() const;
+		const std::multimap<std::string, std::string> &getCgi() const;
 		const std::string				&GetCgiPath() const;
 		const std::string				&GetCgiExtension() const;
 		const std::string				&GetIndex() const;
@@ -57,6 +59,7 @@ class LocationData
 		void					SetFullPath(std::string const &s1, std::string const &s2); //root + location
 		void					SetCgiPath(std::string const &cgipath);
 		void					SetCgiExtension(std::string const &cgiextension);
+		void					SetCgi(void);
 		void					SetIndex(std::string const &index);
 		void					SetRedirect(std::string const &redirect);
 		void					SetMethods(std::string const &methods);

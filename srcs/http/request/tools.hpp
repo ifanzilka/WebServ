@@ -15,6 +15,12 @@
 class Request;
 
 /**
+* CGI PART
+*/
+
+int  checkCgi(const std::multimap<std::string, std::string> &CGI, std::string fPath);
+
+/**
 * RESPONSE_DATA PART
 */
 

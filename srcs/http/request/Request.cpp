@@ -52,6 +52,32 @@ std::string	Request::getBody(void)
 	return _body;
 }
 
+void	Request::getUrlEncodedBody(std::map<std::string, std::string> &queryBody)
+{
+	std::string							tmp;
+	std::size_t							size;
+	std::size_t							pos;
+	std::pair<std::string, std::string>	pair;
+
+	tmp = _body;
+	size = std::count(tmp.begin(), tmp.end(), '&');
+	for (std::size_t i = 0; i < size; i++)
+	{
+		pos = tmp.find("&");
+		pair.first = tmp.substr(0, tmp.find("="));
+		parsePercent(pair.first);
+		pair.second = tmp.substr(tmp.find("=") + 1, pos - pair.first.length() - 1);
+		parsePercent(pair.second);
+		queryBody.insert(pair);
+		tmp.erase(0, pos + 1);
+	}
+}
+
+std::string	Request::getQueryString(void)
+{
+	return _query;
+}
+
 std::string	Request::validateUrl(std::string &fullPath, std::uint32_t &status, std::uint8_t mode)
 {
 	std::string	tmp;

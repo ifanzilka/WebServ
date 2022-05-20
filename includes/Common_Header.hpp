@@ -18,6 +18,7 @@
 #include <unordered_map>
 
 #include <sys/socket.h>
+#include <signal.h> // kill
 
 typedef enum	fileType
 {
