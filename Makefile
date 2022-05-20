@@ -12,9 +12,9 @@
 
 NAME =		webserv
 
-CXX =		clang++
+CXX =		clang++ -g
 
-INC_DIR =	includes#$(shell find includes -type d)
+INC_DIR =	includes #$(shell find includes -type d)
 
 #Compilation flag
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98
@@ -40,8 +40,7 @@ SRCS_KQUEUE = srcs/server/ServerKqueue.cpp
 SRCS_PARSER_CONFIG = srcs/parse_config/LocationData.cpp srcs/parse_config/ParserConfig.cpp srcs/parse_config/ServerData.cpp
 SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POLL) $(SRCS) \
 	srcs/Messenger.cpp srcs/server/ServerCore.cpp \
-	srcs/http/HttpMethodApi.cpp srcs/http/GetMethod.cpp \
-	srcs/http/PostMethod.cpp srcs/http/request/Request.cpp \
+	srcs/http/request/Request.cpp \
 	srcs/http/response/Response.cpp \
 	srcs/http/request/tools.cpp \
 	srcs/http/response/CGI.cpp

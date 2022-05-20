@@ -15,6 +15,8 @@ class CGI
 		~CGI();
 		CGI(Request &_request, const std::multimap<std::string, std::string> &cgis,
 			std::ifstream &FILE);
+
+		void	toRead(bool flag){ _toRead = flag; }
 		int		*initCGI(int cgiNum, pid_t &pid);
 		bool	isReadable(void){ return _toRead; }
 	private:

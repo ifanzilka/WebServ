@@ -44,9 +44,6 @@ void ServerCore::StartWebServer() const
 
 	std::cout << PURPLE"Use: " << "http://"<< serverApi->GetHostName() << ":" <<  serverApi->GetPort() << NORM << std::endl;
 
-	ssize_t read_bytes = 0;
-	std::string request_msg;
-	int	status_code;
 	while (1)
 	{
 		int client_fd;
@@ -61,7 +58,7 @@ void ServerCore::StartWebServer() const
 		{
 			try
 			{
-				messenger.StartMessaging(client_fd, request_msg);
+				messenger.StartMessaging(client_fd);
 				messenger.ClearValidLocations();
 			}
 			catch (std::exception &e)

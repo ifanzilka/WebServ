@@ -27,41 +27,21 @@ class Messenger
 	public:
 		Messenger(ServerData &_server_data);
 		~Messenger();
-		void	StartMessaging(const int client_fd, std::string request_text);
+		void	StartMessaging(const int client_fd);
 		void	ClearValidLocations();
 
-		bool	connectionIsClosed;
+		bool	isClosed;
 	private:
-		bool										_toServe; // флаг обозначающий, что SaveRequestData закончен и можно отправлять данные
+		void			MakeResponse();
+		bool			_toServe; // флаг обозначающий, что SaveRequestData закончен и можно отправлять данные
 
-
-		/** поля связанные с конфигом */
-		std::string						_web_page_name;
-		std::string						_root_dir;
-		std::multimap<int, std::string>	_valid_locations;
-
-		ServerData 					&_server_data;
-
-		/** поля связанные с данными клиента **/
-		HttpData *_client_data;
-
-	//			std::vector<std::string>	_body;
-
-		/** Поля для ответа клиенту*/
-		int					_status_code;
-		std::string			_status_line;
-		std::string 		_file_data;
-
+		int			_client_fd;
 		Request		_request;
 		Response	*_response;
+		std::multimap<int, std::string>	_valid_locations;
 
-		void				CollectDataForResponse();
-		void				SendResponse();
-		std::string			ReadFile(std::string file_path, std::string read_method);
-		std::string			DefineURLFilePath();
-		void				SetValidLocations();
-		std::string			GetRootByLocation(std::string &location_path);
-		std::string			ConstructFullPath(std::string valid_location);
+		HttpData *_client_data;
+		ServerData 					&_server_data;
 };
 
 #include "./http/PostMethod.hpp"

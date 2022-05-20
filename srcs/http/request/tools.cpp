@@ -1,5 +1,16 @@
 #include "tools.hpp"
 
+off_t getFdLen(int fd)
+{
+	struct stat buff;
+	off_t	len = 0;
+	if (fstat(fd, &buff) == -1)
+		len = 0;
+	else
+		len = buff.st_size;
+	return (len);
+}
+
 int  checkCgi(const std::multimap<std::string, std::string> &CGI, std::string fPath)
 {
 	int			res = 0;
@@ -243,17 +254,17 @@ bool	urlInfo(std::string fPath, t_fileInfo *fStruct, std::ifstream &FILE)
 
 std::uint8_t	isDirOrFile(std::string &path)
 {
-	std::string curr_path = getcwd(NULL, 0);
-	std::string full_path;
+//	std::string curr_path = getcwd(NULL, 0);
+//	std::string full_path;
 
-	std::cout << "PWD: "<< curr_path << std::endl; //TODO: =----= УДАЛИТЬ
-	full_path.append(curr_path);
-	full_path.append(path);
-	std::cout << "FULL_PATH: "<< full_path << std::endl; //TODO: =----= УДАЛИТЬ
+//	std::cout << "PWD: "<< curr_path << std::endl; //TODO: =----= УДАЛИТЬ
+//	full_path.append(curr_path);
+//	full_path.append(path);
+	std::cout << "PATH: "<< path << std::endl; //TODO: =----= УДАЛИТЬ
 
 	struct stat	s;
 
-	if (stat(full_path.c_str(), &s) == -1)
+	if (stat(path.c_str(), &s) == -1)
 		return NOT_FOUND;
 	if (s.st_mode & S_IFDIR)
 		return DIR_MODE;

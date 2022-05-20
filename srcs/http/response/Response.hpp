@@ -16,8 +16,8 @@ class Response
 	public:
 		Response(Request &request);
 		~Response();
-		void SendResponse(int client_fd);
-
+		void	SendResponse(int client_fd);
+		bool	isSent() { return (!_leftBytes); }
 	private:
 		char		*makeBody(int &readSize);
 		std::string makeHeaders();

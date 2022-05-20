@@ -78,29 +78,27 @@ Response::~Response() {}
 
 char *Response::makeBody(int &readSize)
 {
-//	if (_inProc || _cgiPtr)
-	if (_inProc)
+	if (_inProc || _cgiPtr)
 	{
-//		if (_url != "ERROR" && !_autoindex)
-//		{
-//			_body = new char[SEND_BUFFER_SIZZ];
-//			memset(_body, 0, SEND_BUFFER_SIZZ);
-//			if (_cgiPtr && _cgiPtr->isReadable())
-//			{
-//				readSize = read(_cgiFd[0], _body, SEND_BUFFER_SIZZ);
-//				if (readSize == 0 || readSize == -1)
-//					_cgiPtr->toRead(false);
-//			}
-//			else
-//			{
-//				_FILE.read(_body, SEND_BUFFER_SIZZ);
-//				readSize = _FILE.gcount();
-//			}
-//			if (_FILE.eof())
-//				_FILE.close();
-//		}
-//		else if (_autoindex)
-		if (_autoindex)
+		if (_url != "ERROR" && !_autoindex)
+		{
+			_body = new char[SEND_BUFFER_SIZZ];
+			memset(_body, 0, SEND_BUFFER_SIZZ);
+			if (_cgiPtr && _cgiPtr->isReadable())
+			{
+				readSize = read(_cgiFd[0], _body, SEND_BUFFER_SIZZ);
+				if (readSize == 0 || readSize == -1)
+					_cgiPtr->toRead(false);
+			}
+			else
+			{
+				_FILE.read(_body, SEND_BUFFER_SIZZ);
+				readSize = _FILE.gcount();
+			}
+			if (_FILE.eof())
+				_FILE.close();
+		}
+		else if (_autoindex)
 		{
 			_body = gen_def_page(_statusCode, _bodySize, _url.c_str(), _reqLocation);
 			readSize = _bodySize;
@@ -155,8 +153,8 @@ void Response::SendResponse(int client_fd)
 	std::cout << BLUE"Autoindex: "NORM << (_autoindex ? "on" : "off") << std::endl;
 	std::cout << PURPLE"============================================================"NORM << std::endl;
 
-//	if (_inProc == false)
-//	{
+	if (_inProc == false && (!_cgiPtr || _cgiPtr->isReadable()))
+	{
 		_response.append(makeStatusLine());
 		_response.append(makeHeaders());
 		_leftBytes = _bodySize;
@@ -166,9 +164,8 @@ void Response::SendResponse(int client_fd)
 //		std::cout << "\n\n" << _response << std::endl << std::endl;
 		_response = std::string(); // TODO: изменить обнуление строки
 		_inProc = true;
-//	}
-//	else if ( _FILE.is_open() ||  _statusCode != 200  || _autoindex /* || _cgiPtr->isReadable() */) //TODO: раскоментить
-	if ( _FILE.is_open() ||  _statusCode != 200  || _autoindex /* || _cgiPtr->isReadable() */) //TODO: раскоментить
+	}
+	else if (_FILE.is_open() || _statusCode != 200 || _autoindex || _cgiPtr->isReadable())
 	{
 		std::cout << "WHAT\n" << std::endl; //TODO: удалить
 		int to_send, pos, tries;
@@ -178,9 +175,9 @@ void Response::SendResponse(int client_fd)
 		{
 			while (pos != to_send)
 			{
-//				if (_cgiPtr && !_cgiPtr->isReadable())
-//					res = write(_cgiFd[1], &(_body[pos]), to_send);
-//				else
+				if (_cgiPtr && !_cgiPtr->isReadable())
+					res = write(_cgiFd[1], &(_body[pos]), to_send);
+				else
 					res = send(client_fd, &(_body[pos]) , to_send, 0);
 				pos += res;
 				if (tries++ == 8 || res == -1)
@@ -193,12 +190,12 @@ void Response::SendResponse(int client_fd)
 		}
 		catch(const std::exception& e)
 		{
-//			if (_cgiPtr)
-//			{
-//				delete _cgiPtr;
-//				_cgiPtr = nullptr;
-//				waitpid(helper, 0, WNOHANG);
-//			}
+			if (_cgiPtr)
+			{
+				delete _cgiPtr;
+				_cgiPtr = nullptr;
+				waitpid(_pid, 0, WNOHANG);
+			}
 			_statusCode = 502;
 			_leftBytes = 1;
 			_inProc = false;
@@ -206,41 +203,41 @@ void Response::SendResponse(int client_fd)
 			std::cerr << e.what() << '\n';
 		}
 		delete [] _body;
-//	}
-//	if (_leftBytes < 1 && !_cgiPtr)
-//	{
-//		_inProc = false;
-//		_leftBytes = false;
-//		if (_cgiPtr)
-//			delete _cgiPtr;
-//		_cgiPtr = nullptr;
-//	}
-//	else if (_leftBytes < 1 && _cgiPtr)
-//	{
-//		if (!_cgiPtr->isReadable())
-//		{
-//			close(_cgiFd[1]);
-//			waitpid(helper, 0, 0);
-//			_bodySize = getFdLen(_cgiFd[0]);
-//			_leftBytes = _bodySize;
-//			if (_leftBytes == -1)
-//			{
-//				_statusCode = 500;
-//				delete _cgiPtr;
-//				_cgiPtr = nullptr;
-//				_inProc = false;
-//				close(_cgiFd[0]);
-//			}
-//			else
-//				_cgiPtr->toRead(true);
-//		}
-//		else
-//		{
-//			close(_cgiFd[0]);
-//			delete _cgiPtr;
-//			_cgiPtr = nullptr;
-//			_inProc = false;
-//		}
+	}
+	if (_leftBytes < 1 && !_cgiPtr)
+	{
+		_inProc = false;
+		_leftBytes = false;
+		if (_cgiPtr)
+			delete _cgiPtr;
+		_cgiPtr = nullptr;
+	}
+	else if (_leftBytes < 1 && _cgiPtr)
+	{
+		if (!_cgiPtr->isReadable())
+		{
+			close(_cgiFd[1]);
+			waitpid(_pid, 0, 0);
+			_bodySize = getFdLen(_cgiFd[0]);
+			_leftBytes = _bodySize;
+			if (_leftBytes == -1)
+			{
+				_statusCode = 500;
+				delete _cgiPtr;
+				_cgiPtr = nullptr;
+				_inProc = false;
+				close(_cgiFd[0]);
+			}
+			else
+				_cgiPtr->toRead(true);
+		}
+		else
+		{
+			close(_cgiFd[0]);
+			delete _cgiPtr;
+			_cgiPtr = nullptr;
+			_inProc = false;
+		}
 	}
 }
 

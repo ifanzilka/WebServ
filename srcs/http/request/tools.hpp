@@ -18,6 +18,7 @@ class Request;
 * CGI PART
 */
 
+off_t getFdLen(int fd);
 int  checkCgi(const std::multimap<std::string, std::string> &CGI, std::string fPath);
 
 /**
