@@ -45,7 +45,7 @@ ServerSelect::ServerSelect(const char *ipaddr, int port)
 ==============================================
 */
 
-int	ServerSelect::WaitEvent()
+int	ServerSelect::WaitEvent(int &client_fd)
 {
 	struct timeval 	time;
 	int 			_select;
@@ -148,15 +148,15 @@ void	ServerSelect::AddFd(int fd)
 }
 
 
-void ServerSelect::RemoteFd(int fd)
+void ServerSelect::RemoteFd(int fd) //TODO: переименовать в Remove
 {
-	Logger(B_GRAY, "Remote fd " + std::to_string(fd));
+	Logger(B_GRAY, "Remote fd " + std::to_string(fd)); //TODO: переименовать в Remove
 
 
 	/* Удаляю из множества */
 	FD_CLR(fd, &_currfds);
 
-	RemoteClient(fd);
+	RemoteClient(fd); //TODO: переименовать в Remove
 }
 
 int ServerSelect::ReadFd(int fd)
@@ -170,7 +170,7 @@ int ServerSelect::ReadFd(int fd)
 	if (ret == 0)
 	{
 		Logger(RED, "Disconnect  fd(" + std::to_string(fd) + ") ❌ ");
-		RemoteFd(fd);
+		RemoteFd(fd); //TODO: переименовать в Remove
 		return (0);
 
 	}

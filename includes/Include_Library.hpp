@@ -1,6 +1,5 @@
 #ifndef INCLUDE_LIBRARY
-# define INCLUDE_LIBRARY
-
+#define INCLUDE_LIBRARY
 
 /* Server Engine */
 #include "server/Color.hpp"
@@ -14,7 +13,6 @@
 #include "parse_config/LocationData.hpp"
 #include "parse_config/ParserConfig.hpp"
 #include "parse_config/ServerData.hpp"
-
 
 #include "ServerExceptions.hpp"
 

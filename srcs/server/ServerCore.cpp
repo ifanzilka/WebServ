@@ -20,21 +20,23 @@ void ServerCore::StartWebServer() const
 	std::string host = _server_data.GetHost();
 	int			port = _server_data.GetPort();
 
-	Messenger messenger(_server_data);
-	AbstractServerApi *serverApi = nullptr;
+//	AbstractServerApi *serverApi = nullptr;
+	ServerKqueue *serverApi = nullptr;
 
-	#ifdef KQUEUE
+//	#ifdef KQUEUE
 		std::cout << "KQUEUE\n" << std::endl;
 		serverApi = new ServerKqueue(host, port);
-	#endif
-	#ifdef POLL
-		std::cout << "POLL\n" << std::endl;
-		serverApi = new ServerPoll(host, port);
-	#endif
-	#ifdef SELECT
-		std::cout << "SELECT\n" << std::endl;
-		serverApi = new ServerSelect(host, port);
-	#endif
+//	#endif
+//	#ifdef POLL
+//		std::cout << "POLL\n" << std::endl;
+//		serverApi = new ServerPoll(host, port);
+//	#endif
+//	#ifdef SELECT
+//		std::cout << "SELECT\n" << std::endl;
+//		serverApi = new ServerSelect(host, port);
+//	#endif
+
+	Messenger messenger(_server_data, *serverApi); //TODO: поменять на KQUEUE
 
 	if (serverApi == nullptr)
 	{
@@ -47,26 +49,56 @@ void ServerCore::StartWebServer() const
 	while (1)
 	{
 		int client_fd;
-		serverApi->WaitEvent();
+		int event;
+		event = serverApi->WaitEvent(client_fd);
 
-		if (serverApi->CheckAccept() != 0)
+		try
 		{
-			continue;
-		}
-		client_fd = serverApi->CheckRead();
-		if (client_fd != 0)
-		{
-			try
+			if (!event)
 			{
-				messenger.StartMessaging(client_fd);
+				std::cout << BLUE"WAITING..."NORM << std::endl;
+			}
+			else if (event == EV_EOF)
+			{
+				std::cout << GREEN"DISCONNECT"NORM << std::endl;
+			}
+			else if (event == EVFILT_READ)
+			{
+				std::cout << YELLOW"READ"NORM << std::endl;
+				messenger.ReadRequest(client_fd);
 				messenger.ClearValidLocations();
 			}
-			catch (std::exception &e)
+			else if (event == EVFILT_WRITE)
 			{
-				std::cout << e.what() << std::endl;
+				std::cout << PURPLE"WRITE"NORM << std::endl;
 			}
-			continue;
+			else
+			{
+				std::cout << RED"FUUUUUCK"NORM << std::endl;
+			}
 		}
+		catch (RequestException &e)
+		{
+			std::cout << e.what() << std::endl;
+		}
+//		if (serverApi->CheckAccept() != 0)
+//		{
+//			continue;
+//		}
+//		client_fd = serverApi->CheckRead();
+//		if (client_fd != 0)
+//		{
+//			try
+//			{
+//				messenger.StartMessaging(client_fd);
+//				messenger.ClearValidLocations();
+//			}
+//			catch (std::exception &e)
+//			{
+//				std::cout << e.what() << std::endl;
+//			}
+//			continue;
+//		}
 	}
 
 	delete serverApi;

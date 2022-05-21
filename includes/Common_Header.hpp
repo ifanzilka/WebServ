@@ -8,6 +8,14 @@
 #define LF				"\n"
 #define CRLF			"\r\n"
 
+/* kqueue */
+#include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
+
+#include <sys/socket.h>
+#include <signal.h> // kill
+
 //#include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
@@ -16,9 +24,6 @@
 #include <fstream>
 #include <map>
 #include <unordered_map>
-
-#include <sys/socket.h>
-#include <signal.h> // kill
 
 typedef enum	fileType
 {
@@ -35,10 +40,10 @@ typedef struct s_fileInfo
 	int				fStatus;
 }		t_fileInfo;
 
-#include "./server/Color.hpp"
-#include "./ServerExceptions.hpp"
+#include "Include_Library.hpp"
 
 #include "./parse_config/ServerData.hpp"
+
 #include "../srcs/http/request/Request.hpp"
 #include "../srcs/http/response/Response.hpp"
 

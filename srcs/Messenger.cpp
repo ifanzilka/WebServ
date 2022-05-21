@@ -1,9 +1,11 @@
 #include "Messenger.hpp"
 #include <sys/socket.h>
 #include <exception>
+#include "server/ServerKqueue.hpp"
 
-Messenger::Messenger(ServerData &server_data)
+Messenger::Messenger(ServerData &server_data, ServerKqueue &server_api)
 	: _server_data(server_data),
+	_server_api(server_api),
 	_request(server_data.GetLocationData()),
 	_response(nullptr),
 	_toServe(false)
@@ -23,7 +25,7 @@ Messenger::~Messenger()
 }
 
 // TODO: сделать bool возврат
-void Messenger::StartMessaging(const int client_fd)
+void Messenger::ReadRequest(const int client_fd)
 {
 	//TODO: добавить время начала процесса парсинга для хедеров
 	_client_fd = client_fd;
@@ -46,7 +48,13 @@ void Messenger::StartMessaging(const int client_fd)
 		// TODO: вывод статистики парсинга
 		_request.PrintAllRequestData();
 
-		MakeResponse();
+		if (_toServe)
+		{
+			_server_api.disableReadEvent(client_fd, &_server_api);
+//			_server_api.enableWriteEvent(client_fd, &_server_api);
+		}
+
+//		MakeResponse();
 	}
 	catch (RequestException &e)
 	{

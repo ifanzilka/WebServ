@@ -20,14 +20,16 @@ struct HttpData
 	std::string					_transfer_encoding;
 };
 
+class ServerKqueue;
 class Response;
+class Request;
 
 class Messenger
 {
 	public:
-		Messenger(ServerData &_server_data);
+		Messenger(ServerData &server_data, ServerKqueue &server_api);
 		~Messenger();
-		void	StartMessaging(const int client_fd);
+		void	ReadRequest(const int client_fd);
 		void	ClearValidLocations();
 
 		bool	isClosed;
@@ -40,7 +42,8 @@ class Messenger
 		Response	*_response;
 		std::multimap<int, std::string>	_valid_locations;
 
-		HttpData *_client_data;
+		ServerKqueue				&_server_api;
+		HttpData 					*_client_data;
 		ServerData 					&_server_data;
 };
 

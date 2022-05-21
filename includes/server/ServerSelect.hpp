@@ -20,7 +20,7 @@ class ServerSelect: public AbstractServerApi
 		ServerSelect(const char *ipaddr, int port);
 
 		/* Events */
-		virtual	int			WaitEvent();
+		virtual	int			WaitEvent(int &client_fd);
 		virtual	int			CheckAccept();
 		virtual	int			CheckRead();
 		//virtual void 		CheckWrite();
@@ -39,7 +39,7 @@ class ServerSelect: public AbstractServerApi
 
 		void 	Init_Serv();
 		void	AddFd(int client_fd);
-		void	RemoteFd(int client_fd);
+		void	RemoteFd(int client_fd); //TODO: переименовать в Remove
 };
 
 #endif

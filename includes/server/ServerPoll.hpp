@@ -16,7 +16,7 @@ class ServerPoll: public AbstractServerApi
 		ServerPoll(std::string &ipaddr, int port);
 		ServerPoll(const char *ipaddr, int port);
 
-		virtual int			WaitEvent();
+		virtual int			WaitEvent(int &client_fd);
 		virtual int			CheckAccept();
 		virtual	int 		CheckRead();
 		//virtual int 		CheckWrite();
@@ -33,7 +33,7 @@ class ServerPoll: public AbstractServerApi
 		void 	Init_Serv();
 
 		void 	AddFd(int fd);
-		void	RemoteFd(int client_fd);
+		void	RemoteFd(int client_fd); //TODO: переименовать в Remove
 };
 
 #endif

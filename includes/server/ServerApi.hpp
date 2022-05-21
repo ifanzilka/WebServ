@@ -56,7 +56,7 @@ class AbstractServerApi
 {
 	public:
 
-		virtual	int			WaitEvent() = 0;
+		virtual	int			WaitEvent(int &client_fd) = 0;
 		virtual int			CheckAccept() = 0;
 		virtual	int 		CheckRead() = 0;
 		//virtual int		CheckWrite() = 0;
@@ -93,7 +93,7 @@ class AbstractServerApi
 		virtual	int 		Accept();
 
 		void				AddClient(int fd, struct sockaddr_in addrclient);
-		void				RemoteClient(int fd);
+		void				RemoteClient(int fd); //TODO: переименовать в Remove
 
 		/* Print Errno */
 		virtual	void	ServerError(const char *s);

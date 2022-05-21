@@ -6,7 +6,6 @@
 #define CGI_HPP
 
 #include "Common_Header.hpp"
-
 class Request;
 
 class CGI

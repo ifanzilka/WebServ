@@ -175,16 +175,17 @@ int	AbstractServerApi::Accept()
 
 void	AbstractServerApi::AddClient(int fd, struct sockaddr_in addrclient)
 {
-	Logger(GREEN, "Add client in vector ✅ ");
 	fcntl(fd, F_SETFL, O_NONBLOCK);
 
 	Client client(fd, addrclient);
 	_clients.push_back(client);
+	Logger(GREEN, "Add client in vector ✅ ");
 }
 
+//TODO: переименовать в Remove
 void AbstractServerApi::RemoteClient(int fd)
 {
-	Logger(B_GRAY, "Remote client " + std::to_string(fd));
+	Logger(B_GRAY, "Remote client " + std::to_string(fd)); //TODO: переименовать в Remove
 
 	std::vector<Client>::iterator	it;
 	std::vector<Client>::iterator	it_end;

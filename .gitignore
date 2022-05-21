@@ -10,3 +10,4 @@ webserv_dev
 *.DS_Store
 *.txt
 .notebook/
+webserv.dSYM
