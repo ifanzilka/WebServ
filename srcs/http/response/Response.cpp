@@ -15,7 +15,6 @@ Response::Response(Request &request) :
 	_contentType = "text/html";
 	if ((_statusCode = request.getErrorStatus()) == 0)
 	{
-		std::cout << GREEN"===ZERO CODE==="NORM << std::endl; // TODO: удалить
 		_bodySize = 0;
 		_reqHeaders = request.getHeaders();
 		_method = request.getMethod();
@@ -23,9 +22,6 @@ Response::Response(Request &request) :
 		_reqLocation = request.getLocation();
 		_autoindex = _statusCode == 1;
 	}
-
-	std::cout << "Response() after if() Status_code: " << _statusCode << std::endl; // TODO: удалить
-
 	if (_statusCode < 399 && _statusCode != 1 && _method != "PUT" && _method != "DELETE")
 	{
 		urlInfo(_url, &file,  _FILE);
@@ -182,7 +178,7 @@ void Response::SendResponse(int client_fd)
 				if (tries++ == 8 || res == -1)
 				{
 					_leftBytes = 0;
-					throw RequestException("TOO MANY ATTEMPTS TO SEND DATA");
+					throw RequestException("TOO MANY ATTEMPTS TO SEND DATA"); //TODO увеличить кол-во попыток
 				}
 			}
 			_leftBytes -= res;
@@ -261,7 +257,6 @@ std::string Response::getErrorPage()
 		{
 			t_fileInfo file;
 			urlInfo(i->second, &file, _FILE);
-			std::cout << BLUE"urlInfo() fStatus return: "NORM << file.fStatus << std::endl; // TODO: удалить
 			if (file.fStatus == 200)
 			{
 				_bodySize = file.fLength;
@@ -270,7 +265,6 @@ std::string Response::getErrorPage()
 			}
 		}
 	}
-	std::cout << BLUE"urlInfo() autoindex: "NORM << (_autoindex ? "on" : "off") << std::endl; // TODO: удалить
 	if (_autoindex)
 		def_page = (gen_def_page(_statusCode, _bodySize, _url.c_str(), _reqLocation));
 	else

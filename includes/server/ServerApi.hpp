@@ -93,7 +93,7 @@ class AbstractServerApi
 		virtual	int 		Accept();
 
 		void				AddClient(int fd, struct sockaddr_in addrclient);
-		void				RemoteClient(int fd); //TODO: переименовать в Remove
+		void				RemoveClient(int fd);
 
 		/* Print Errno */
 		virtual	void	ServerError(const char *s);

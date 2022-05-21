@@ -65,10 +65,6 @@ class LocationData
 		void					SetMethods(std::string const &methods);
 		void					SetClientBufferBodySize(size_t body_size);
 
-	//////////////////////////////////////////////
-		// size_t&	getBodySize();
-		// std::vector<std::string>& getMethods(void);
-		// std::string& getRedirect();
 		LocationData	&operator=(const LocationData &copy);
 };
 

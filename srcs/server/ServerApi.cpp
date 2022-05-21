@@ -21,19 +21,11 @@ void AbstractServerApi::Init(std::string& ipaddr, int port)
 	/* Port host to network short  */
 	_servaddr.sin_port = htons(_port);
 	/* преобразовать номер порта из порядка байтов хоста */
-
-	/* Ip */
-	//TODO: check; Must be: server_info.sin_addr.s_addr = INADDR_ANY;
-	//_servaddr.sin_addr.s_addr = inet_addr(_ipaddr.c_str()); //127.0.0.1 or htonl(2130706433);
-	//_servaddr.sin_addr.s_addr = INADDR_ANY;//0.0.0.0
 	_servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
 	/* Создаю сокет */
 	Create_socket();
-
 	/* Связываю его с адресом и портом*/
 	Binded();
-
 	/* Делаю сокет прослушивающим */
 	Listen();
 
@@ -48,43 +40,14 @@ void AbstractServerApi::Init(std::string& ipaddr, int port)
 		_logs.open(log_file_name, std::ios::ate);
 		Logger(std::string("Init Server!"));
 	#endif
-
-	// _fd_log_file = open(log_file_name.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0655);
-	// if (_fd_log_file < 0)
-	// 	ServerError("LogFile");
-	// write(_fd_log_file, "Hello\n", 7);
-	//_logs.close();
-
 }
 
 int AbstractServerApi::Create_socket()
 {
-	/**
-		int	socket(int domain, int type, int protocol);
-		(0) domain:
-		AF_UNIX, AF_LOCAL- Местная связь
-		AF_INET- Интернет-протоколы IPv4
-		AF_INET6- Интернет-протоколы IPv6
-		AF_IPX- протоколы IPX Novell
-
-		(1) type:
-		type указывает, будет ли связь бесконтактной или постоянной.
-		Не все types совместимы со всеми domains. Некоторые примеры:
-
-		SOCK_STREAM- Двусторонняя надежная связь (TCP)
-		SOCK_DGRAM- Без установления соединения, ненадежный (UDP)
-
-		(2) protocol:
-		Обычно для каждого protocol'a доступно только одно значение type,
-		поэтому можно использовать значение '0'.
-	*/
-
 	_server_fd = socket(_servaddr.sin_family, SERVER_TYPE, 0);
-	//_server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (_server_fd < 0)
 		ServerError("Socket()");
-
 
 	std::cout << GREEN << "Socket fd(" <<  _server_fd << ") successfully created ✅ " << NORM << "\n";
 	fcntl(_server_fd, F_SETFL, O_NONBLOCK);
@@ -97,30 +60,9 @@ int AbstractServerApi::Binded()
 	if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) < 0)
 		ServerError("Setsokport");
 
-	/**
-
-	Когда у нас есть сокет, нам нужно использовать привязку, чтобы назначить IP-адрес и порт сокету
-	Создаю имя для сокета (потому нужен unlink )
-
-	int bind(int sockfd, const sockaddr *addr, socklen_t addrlen);
-	(0) sockfd:
-	sockfd относится к файловому дескриптору, которому мы хотим присвоить адрес.
-	Для нас это будет файловый дескриптор, возвращаемый socket().
-
-	(1) addr:
-	addr - структура, используемая для указания адреса, который мы хотим присвоить сокету.
-	Точная структура, которую необходимо использовать для определения адреса, зависит от протокола.
-	Поскольку мы собираемся использовать IP для этого сервера, мы будем использовать sockaddr_in
-
-	(2) addrlen
-	addrlen - просто size() из addr.
-
-	*/
 	int bind_ = bind(_server_fd, (const struct sockaddr *)&_servaddr, sizeof(_servaddr));
-
 	if (bind_ < 0)
 		ServerError("Bind: ");
-
 	std::cout << GREEN << "Success bind socket ✅ " << NORM << "\n";
 	return bind_;
 }
@@ -129,24 +71,9 @@ int AbstractServerApi::Listen()
 {
 	int _listen;
 
-	/**
-		listen помечает сокет как пассивный. т.е. сокет будет использоваться для приема соединений.
-
-		Функция listen используется сервером, чтобы информировать ОС,
-		что он ожидает ("слушает") запросы связи на данном сокете
-
-		int listen(int socket_fd, int backlog);
-			sockfd - файловый дескриптор сокета.
-
-			backlog - максимальное количество подключений, которые будут поставлены в очередь,
-			прежде чем в подключениях будет отказано.
-	*/
-
 	_listen = listen(_server_fd, MAX_CONNECT_LISTEN);
-
 	if (_listen < 0)
 		ServerError("listen");
-
 	std::cout << GREEN << "Server is listening " << MAX_CONNECT_LISTEN << " connections ✅ " << NORM << "\n";
 	return (_listen);
 }
@@ -182,14 +109,12 @@ void	AbstractServerApi::AddClient(int fd, struct sockaddr_in addrclient)
 	Logger(GREEN, "Add client in vector ✅ ");
 }
 
-//TODO: переименовать в Remove
-void AbstractServerApi::RemoteClient(int fd)
+void AbstractServerApi::RemoveClient(int fd)
 {
-	Logger(B_GRAY, "Remote client " + std::to_string(fd)); //TODO: переименовать в Remove
+	Logger(B_GRAY, "Remove client " + std::to_string(fd));
 
 	std::vector<Client>::iterator	it;
 	std::vector<Client>::iterator	it_end;
-
 
 	it = _clients.begin();
 	it_end = _clients.end();

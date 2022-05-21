@@ -39,7 +39,7 @@ class ServerSelect: public AbstractServerApi
 
 		void 	Init_Serv();
 		void	AddFd(int client_fd);
-		void	RemoteFd(int client_fd); //TODO: переименовать в Remove
+		void	RemoveFd(int client_fd);
 };
 
 #endif

@@ -121,7 +121,6 @@ std::string	ft_itoa(int x)
 	return (tmp);
 }
 
-
 //TODO: проверить корретность страницы ответа, ибо показываются лишние
 // символы из-за добавления 'video_ref'
 char	*gen_def_page(uint32_t &statusCode, uint64_t &bodySize,
@@ -224,7 +223,6 @@ bool	urlInfo(std::string fPath, t_fileInfo *fStruct, std::ifstream &FILE)
 	struct stat buff;
 	int res;
 
-	std::cout << BLUE"urlInfo() fPath: "NORM << fPath << std::endl; // TODO: удалить
 	res = stat(fPath.c_str(), &buff);
 	if (fStruct != nullptr && res != -1)
 	{
@@ -260,7 +258,7 @@ std::uint8_t	isDirOrFile(std::string &path)
 //	std::cout << "PWD: "<< curr_path << std::endl; //TODO: =----= УДАЛИТЬ
 //	full_path.append(curr_path);
 //	full_path.append(path);
-	std::cout << "PATH: "<< path << std::endl; //TODO: =----= УДАЛИТЬ
+//	std::cout << "PATH: "<< path << std::endl; //TODO: =----= УДАЛИТЬ
 
 	struct stat	s;
 
@@ -277,10 +275,10 @@ std::string putDelete(Request &request, uint32_t &statusCode)
 {
 	std::string _url = request.getUrl(statusCode);
 
-	//TODO: удалить
-	std::cout << "URL: " << _url << std::endl;
-	std::cout << "METHOD: " << request.getMethod() << std::endl;
-	std::cout << "STATUS: " << statusCode << std::endl;
+//	//TODO: удалить
+//	std::cout << "URL: " << _url << std::endl;
+//	std::cout << "METHOD: " << request.getMethod() << std::endl;
+//	std::cout << "STATUS: " << statusCode << std::endl;
 
 	if (statusCode == 1) // если автоиндекс
 		return (_url);
@@ -289,7 +287,6 @@ std::string putDelete(Request &request, uint32_t &statusCode)
 	{
 		char *home = getenv("HOME");
 		int pos = _url.find(request.getLocation()->GetLocationPath());
-		std::cout << "Location pos: " << pos << std::endl; //TODO: удалить
 		if (home)
 			_url =  std::string(home) + "/Downloads" + request.getLocation()->GetLocationPath() + _url.substr(_url.find_last_of('/') + 1);
 		else

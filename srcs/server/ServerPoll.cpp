@@ -119,7 +119,7 @@ int ServerPoll::ReadFd(int client_fd)
 	if (ret == 0)
 	{
 		Logger(RED, "Disconnect fd(" + std::to_string(client_fd) + ") ❌ ");
-		RemoteFd(client_fd); //TODO: переименовать в Remove
+		RemoveFd(client_fd);
 		return (0);
 	}
 
@@ -146,9 +146,9 @@ int ServerPoll::ReadFd(int client_fd)
 	return (_client_rqst_msg.size());
 }
 
-void ServerPoll::RemoteFd(int client_fd) //TODO: переименовать в Remove
+void ServerPoll::RemoveFd(int client_fd)
 {
-	Logger(B_GRAY, "Remote fd " + std::to_string(client_fd)); //TODO: переименовать в Remove
+	Logger(B_GRAY, "Remove fd " + std::to_string(client_fd));
 
 	std::vector<struct pollfd>::iterator it = _pollfds.begin();
 	std::vector<struct pollfd>::iterator it_end = _pollfds.end();
@@ -163,7 +163,7 @@ void ServerPoll::RemoteFd(int client_fd) //TODO: переименовать в R
 		}
 		it++;
 	}
-	RemoteClient(client_fd); //TODO: переименовать в Remove
+	RemoveClient(client_fd);
 }
 
 /* Destructor */

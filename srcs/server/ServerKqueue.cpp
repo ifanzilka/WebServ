@@ -1,7 +1,6 @@
 #include <Include_Library.hpp>
 //#include "ServerKqueue.hpp"
 
-/* Constructor */
 ServerKqueue::ServerKqueue(int port)
 {
 	std::string tmp = "127.0.0.1";
@@ -22,7 +21,6 @@ ServerKqueue::ServerKqueue(std::string ipaddr, int port)
 	Init_Serv();
 }
 
-/* Init */
 void 	ServerKqueue::Init_Serv()
 {
 	_logs << "ServerType: Kqueue 🌐 " << std::endl;
@@ -45,7 +43,6 @@ void 	ServerKqueue::Init_Serv()
 
 int	ServerKqueue::WaitEvent(int &client_fd)
 {
-
 	bzero(_evList, sizeof(_evList));
 	struct timespec ts;
 	ts.tv_sec = 3;
@@ -57,7 +54,6 @@ int	ServerKqueue::WaitEvent(int &client_fd)
 		ServerError("kevent");
 
 	//Logger(B_GRAY, "kevent return " + std::to_string(_new_events));
-//	return (_new_events);
 
 	int event_flag = 0;
 
@@ -71,8 +67,7 @@ int	ServerKqueue::WaitEvent(int &client_fd)
 		{
 			//TODO: std::to_string - 11CPP
 			Logger(RED, "Disconnect fd(" + std::to_string(client_fd) + ") ❌ ");
-			RemoteFd(client_fd);
-//			close(client_fd);
+			RemoveFd(client_fd);
 			event_flag = EV_EOF;
 		}
 		else if (client_fd == _server_fd)
@@ -82,12 +77,10 @@ int	ServerKqueue::WaitEvent(int &client_fd)
 		}
 		else if (_evList[i].filter == EVFILT_READ)
 		{
-//			ReadFd(event_fd);
 			event_flag = EVFILT_READ;
 		}
 		else if (_evList[i].filter == EVFILT_WRITE)
 		{
-			//to do
 			event_flag = EVFILT_WRITE;
 		}
 	}
@@ -117,7 +110,6 @@ int ServerKqueue::CheckAccept()
 	client_fd = Accept();
 	if (client_fd == -1)
 	{
-		//ServerError("CheckAccept");
 		return -1;
 	}
 	AddFd(client_fd);
@@ -138,12 +130,11 @@ int ServerKqueue::CheckRead()
 		if (_evList[i].flags & EV_EOF)
 		{
 			Logger(RED, "Disconnect fd(" + std::to_string(event_fd) + ") ❌ ");
-			RemoteFd(event_fd); //TODO: переименовать в Remove
+			RemoveFd(event_fd);
 		}
 		else if (_evList[i].filter & EVFILT_READ)
 		{
 			return (event_fd);
-			//ReadFd(event_fd);
 		}
 	}
 	return (0);
@@ -154,9 +145,7 @@ void ServerKqueue::disableReadEvent(int socket, void *udata)
 	struct kevent kv;
 	EV_SET(&kv, socket, EVFILT_READ, EV_DISABLE, 0 , 0, udata);
 	if (kevent(_kq_fd, &kv, 1, NULL, 0, NULL) == -1)
-	{
-		std::cerr << "ERROR disabling event for read" << std::endl;
-	}
+		std::cerr << "kevent() disableReadEvent error" << std::endl;
 
 	std::cout << B_CYAN"READ EVENT DISABLED"NORM << std::endl; //TODO: удалить
 }
@@ -166,9 +155,7 @@ void ServerKqueue::enableWriteEvent(int socket, void *udata)
 	struct kevent kv;
 	EV_SET(&kv, socket, EVFILT_WRITE, EV_ENABLE, 0 , 0, udata);
 	if (kevent(_kq_fd, &kv, 1, NULL, 0, NULL) == -1)
-	{
-		std::cerr << "ERROR enabling event for write" << std::endl;
-	}
+		std::cerr << "kevent() enableWriteEvent error" << std::endl;
 
 	std::cout << B_GREEN"WRITE EVENT ENABLED"NORM << std::endl; //TODO: удалить
 }
@@ -178,9 +165,7 @@ void ServerKqueue::disableWriteEvent(int socket, void *udata)
 	struct kevent kv;
 	EV_SET(&kv, socket, EVFILT_WRITE, EV_DISABLE, 0 , 0, udata);
 	if (kevent(_kq_fd, &kv, 1, NULL, 0, NULL) == -1)
-	{
-		std::cerr << "ERROR disabling event for write" << std::endl;
-	}
+		std::cerr << "kevent() disableWriteEvent error" << std::endl;
 
 	std::cout << B_CYAN"WRITE EVENT DISABLED"NORM << std::endl; //TODO: удалить
 }
@@ -190,12 +175,9 @@ void ServerKqueue::addReadEvent(int socket, void *udata)
 	struct kevent kv;
 	EV_SET(&kv, socket, EVFILT_READ, EV_ADD, 0 , 0, udata);
 	if (kevent(_kq_fd, &kv, 1, NULL, 0, NULL) == -1)
-	{
-		std::cerr << "ERROR adding event for write" << std::endl;
-	}
+		std::cerr << "kevent() addReadEvent error" << std::endl;
 
 	std::cout << B_CYAN"READ EVENT ADDED"NORM << std::endl; //TODO: удалить
-//	update_len++;
 }
 
 void ServerKqueue::addWriteEvent(int socket, void *udata)
@@ -203,12 +185,9 @@ void ServerKqueue::addWriteEvent(int socket, void *udata)
 	struct kevent kv;
 	EV_SET(&kv, socket, EVFILT_WRITE, EV_ADD , 0 , 0, udata);
 	if (kevent(_kq_fd, &kv, 1, NULL, 0, NULL) == -1)
-	{
-		std::cerr << "ERROR adding event for write" << std::endl;
-	}
+		std::cerr << "kevent() addWriteEvent error" << std::endl;
 
 	std::cout << B_CYAN"WRITE EVENT ADDED"NORM << std::endl; //TODO: удалить
-//	update_len++;
 }
 
 /**
@@ -227,16 +206,14 @@ void ServerKqueue::AddFd(int fd)
 	disableWriteEvent(fd, this);
 }
 
-//TODO: переименовать в Remove
-void ServerKqueue::RemoteFd(int client_fd)
+void ServerKqueue::RemoveFd(int client_fd)
 {
-	Logger(B_GRAY, "Remote fd " + std::to_string(client_fd)); //TODO: переименовать в Remove
+	Logger(B_GRAY, "Remove fd " + std::to_string(client_fd));
 
 	close(client_fd);
-	RemoteClient(client_fd); //TODO: переименовать в Remove
+	RemoveClient(client_fd);
 }
 
-/* Destrcutor */
 ServerKqueue::~ServerKqueue()
 {
 	close(_kq_fd);

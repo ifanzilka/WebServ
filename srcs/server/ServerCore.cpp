@@ -64,13 +64,11 @@ void ServerCore::StartWebServer() const
 			}
 			else if (event == EVFILT_READ)
 			{
-//				std::cout << YELLOW"READ"NORM << std::endl;
 				messenger.ReadRequest(client_fd);
 				messenger.ClearValidLocations();
 			}
 			else if (event == EVFILT_WRITE)
 			{
-//				std::cout << PURPLE"WRITE"NORM << std::endl;
 				messenger.MakeResponse();
 			}
 			else
@@ -83,6 +81,5 @@ void ServerCore::StartWebServer() const
 			std::cout << e.what() << std::endl;
 		}
 	}
-
 	delete serverApi;
 }

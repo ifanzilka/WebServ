@@ -33,7 +33,7 @@ class ServerPoll: public AbstractServerApi
 		void 	Init_Serv();
 
 		void 	AddFd(int fd);
-		void	RemoteFd(int client_fd); //TODO: переименовать в Remove
+		void	RemoveFd(int client_fd);
 };
 
 #endif

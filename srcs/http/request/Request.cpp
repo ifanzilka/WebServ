@@ -82,14 +82,14 @@ std::string	Request::validateUrl(std::string &fullPath, std::uint32_t &status, s
 {
 	std::string	tmp;
 
-	std::cout << PURPLE"==============VALIDATE URL=============="NORM << std::endl;
-	std::cout << "FULL_PATH: " << fullPath << std::endl;	//TODO: удалить
-	std::cout << "Status: " << status << std::endl;	//TODO: удалить
-	std::cout << "MODE: " << (mode == NOT_FOUND ? "NOT_FOUND"
-		: mode == DIR_MODE ? "DIR_MODE"
-		: mode == FILE_MODE ? "FILE_MODE"
-		: mode == UNKNOWN_MODE ? "UKNOWN_MODE" : 0) << std::endl;	//TODO: удалить
-	std::cout << PURPLE"========================================="NORM << std::endl;
+//	std::cout << PURPLE"==============VALIDATE URL=============="NORM << std::endl;
+//	std::cout << "FULL_PATH: " << fullPath << std::endl;	//TODO: удалить
+//	std::cout << "Status: " << status << std::endl;	//TODO: удалить
+//	std::cout << "MODE: " << (mode == NOT_FOUND ? "NOT_FOUND"
+//		: mode == DIR_MODE ? "DIR_MODE"
+//		: mode == FILE_MODE ? "FILE_MODE"
+//		: mode == UNKNOWN_MODE ? "UKNOWN_MODE" : 0) << std::endl;	//TODO: удалить
+//	std::cout << PURPLE"========================================="NORM << std::endl;
 
 	if (mode == DIR_MODE) /** DIRECTORY */
 	{
@@ -143,8 +143,7 @@ std::string	Request::getUrl(std::uint32_t &status)
 	/** REDIRECT */
 	if (_location && (!_location->GetRedirect().empty()))
 	{
-		//TODO: добавить статус код для редиректа
-		status = 301;
+		status = 301; //TODO: добавить статус код для редиректа
 		return _location->GetRedirect();
 	}
 	status = 200;
@@ -159,17 +158,17 @@ std::string	Request::getUrl(std::uint32_t &status)
 	if (fullPath[fullPath.length() - 1] == '/')
 		fullPath.pop_back();
 
-	//TODO: =----= УДАЛИТЬ
-	std::cout << PURPLE"==============GET_URL=============="NORM << std::endl;
-	std::cout << *_location << std::endl;
-	std::cout << "FullPath: " << fullPath << std::endl;
+//	//TODO: =----= УДАЛИТЬ
+//	std::cout << PURPLE"==============GET_URL=============="NORM << std::endl;
+//	std::cout << *_location << std::endl;
+//	std::cout << "FullPath: " << fullPath << std::endl;
 
-	std::cout << PURPLE"==================================="NORM << std::endl;
+//	std::cout << PURPLE"==================================="NORM << std::endl;
 
-	//TODO: =----= УДАЛИТЬ
-	std::cout << BLUE"==============IsDirOrFile=============="NORM << std::endl;
+//	TODO: =----= УДАЛИТЬ
+//	std::cout << BLUE"==============IsDirOrFile=============="NORM << std::endl;
 	mode = isDirOrFile(fullPath);
-	std::cout << BLUE"========================================"NORM << std::endl;
+//	std::cout << BLUE"========================================"NORM << std::endl;
 	//TODO: проверить валидность открытия 404 страницы
 	if (mode == NOT_FOUND && _method != "POST" && _method != "PUT")
 	{
@@ -376,13 +375,11 @@ void Request::saveStartLineHeaders(std::string &data)
 	newLinePos = data.find(LF);
 	while (newLinePos != std::string::npos and (_parseState != BODY_LINE and _parseState != END_STATE))
 	{
-		/** */
 		if (_parseState == START_LINE)
 		{
 			saveStartLine(data.substr(0, newLinePos));
 			data.erase(0, newLinePos + 1);
 		}
-		/**  */
 		if (_parseState == HEADER_LINE)
 		{
 			newLinePos = data.find(LF);
@@ -434,7 +431,6 @@ void	Request::parseChunkSize(std::string &data)
 		_parseState = END_STATE;
 	_isChunkSize = true;
 	data.erase(0, pos + 1);
-	return;
 }
 
 void	Request::saveChunkedBody(std::string &data)
@@ -476,7 +472,7 @@ bool Request::saveRequestData(size_t data_size)
 
 	if (_parseState == END_STATE)
 		resetRequest();
-	if (_parseState == START_LINE or _parseState == HEADER_LINE)
+	if (_parseState == START_LINE || _parseState == HEADER_LINE)
 		saveStartLineHeaders(data);
 	if (_parseState == BODY_LINE)
 	{
@@ -523,5 +519,4 @@ void Request::PrintAllRequestData()
 	std::cout << "_chunkSize: " << _chunkSize << std::endl;
 	std::cout << "_isChunkSize: " << _isChunkSize << std::endl;
 	std::cout << "_query: " << (_query.empty() ? "empty" : _query) << std::endl;
-
 }

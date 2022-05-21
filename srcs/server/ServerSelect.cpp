@@ -148,15 +148,14 @@ void	ServerSelect::AddFd(int fd)
 }
 
 
-void ServerSelect::RemoteFd(int fd) //TODO: переименовать в Remove
+void ServerSelect::RemoveFd(int fd)
 {
-	Logger(B_GRAY, "Remote fd " + std::to_string(fd)); //TODO: переименовать в Remove
+	Logger(B_GRAY, "Remove fd " + std::to_string(fd));
 
-
-	/* Удаляю из множества */
+	/* Удаление из множества */
 	FD_CLR(fd, &_currfds);
 
-	RemoteClient(fd); //TODO: переименовать в Remove
+	RemoveClient(fd); //TODO: переименовать в Remove
 }
 
 int ServerSelect::ReadFd(int fd)
@@ -170,9 +169,8 @@ int ServerSelect::ReadFd(int fd)
 	if (ret == 0)
 	{
 		Logger(RED, "Disconnect  fd(" + std::to_string(fd) + ") ❌ ");
-		RemoteFd(fd); //TODO: переименовать в Remove
+		RemoveFd(fd);
 		return (0);
-
 	}
 
 	_client_rqst_msg.resize(0);
