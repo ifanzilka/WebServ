@@ -376,8 +376,6 @@ void Request::saveStartLineHeaders(std::string &data)
 	newLinePos = data.find(LF);
 	while (newLinePos != std::string::npos and (_parseState != BODY_LINE and _parseState != END_STATE))
 	{
-		if (_parseState == END_STATE)
-			resetRequest();
 		/** */
 		if (_parseState == START_LINE)
 		{
@@ -476,6 +474,8 @@ bool Request::saveRequestData(size_t data_size)
 	_buffer[data_size] = '\0';
 	data.append(_buffer, data_size);
 
+	if (_parseState == END_STATE)
+		resetRequest();
 	if (_parseState == START_LINE or _parseState == HEADER_LINE)
 		saveStartLineHeaders(data);
 	if (_parseState == BODY_LINE)
