@@ -13,16 +13,16 @@ CGI::CGI(Request &request, const std::multimap<std::string, std::string> &cgis,
 	_toRead = false;
 	status = 200;
 	_url = _request.getUrl(status);
-	_reqHeaders = _request.getHeaders();
+	_reqHeaders = _request.GetHeaders();
 	request.getUrlEncodedBody(_reqHeaders); //TODO: проверить внимательно (ссылку инициализируется значения)
 
 	_reqHeaders.insert(std::pair<std::string, std::string>("QUERY_STRING",
-		_request.getQueryString()));
+		_request.GetURIParameters()));
 	_reqHeaders.insert(std::pair<std::string, std::string>("REQUEST_METHOD",
-		_request.getMethod()));
+		_request.GetMethod()));
 	_reqHeaders.insert(std::pair<std::string, std::string>("PATH_INFO", _url));
 	_reqHeaders.insert(std::pair<std::string, std::string>("PATH_TRANSLATED",
-		_request.getLocation()->GetRoot()));
+		_request.GetLocation()->GetRoot()));
 	_reqHeaders.insert(std::pair<std::string, std::string>("SERVER_PROTOCOL", "HTTP/1.1"));
 }
 

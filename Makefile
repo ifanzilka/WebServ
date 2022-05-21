@@ -42,6 +42,7 @@ SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POL
 	srcs/Messenger.cpp srcs/server/ServerCore.cpp \
 	srcs/http/request/Request.cpp \
 	srcs/http/response/Response.cpp \
+	srcs/http/request/read_first_block.cpp \
 	srcs/http/request/tools.cpp \
 	srcs/http/response/CGI.cpp
 

@@ -6,10 +6,12 @@
 #define RESPONSE_HPP
 
 #include "Common_Header.hpp"
+#include "server/ServerKqueue.hpp"
 #include "CGI.hpp"
 
 class CGI;
 class Request;
+class ServerKqueue;
 
 class Response
 {

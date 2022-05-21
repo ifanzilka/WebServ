@@ -2,7 +2,8 @@
 #define COMMON_HEADER_HPP
 
 #define RECV_BUFFER_SIZE	4096
-#define SEND_BUFFER_SIZZ	2046
+//#define SEND_BUFFER_SIZE	4096
+#define SEND_BUFFER_SIZE	2048
 
 #define CR				"\r"
 #define LF				"\n"

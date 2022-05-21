@@ -39,7 +39,6 @@ std::string					putDelete(Request &request, uint32_t &statusCode);
 /**
 * SAVE_REQUEST_DATA PART
 */
-std::size_t	skipWhiteSpaces(std::string const &str, std::size_t start);
 bool	isCharWhiteSpace(unsigned char c);
 
 

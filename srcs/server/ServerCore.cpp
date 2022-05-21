@@ -71,10 +71,6 @@ void ServerCore::StartWebServer() const
 			{
 				messenger.MakeResponse();
 			}
-			else
-			{
-				std::cout << B_RED"FUUUUUCK"NORM << std::endl;
-			}
 		}
 		catch (RequestException &e)
 		{

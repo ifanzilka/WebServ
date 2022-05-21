@@ -252,14 +252,6 @@ bool	urlInfo(std::string fPath, t_fileInfo *fStruct, std::ifstream &FILE)
 
 std::uint8_t	isDirOrFile(std::string &path)
 {
-//	std::string curr_path = getcwd(NULL, 0);
-//	std::string full_path;
-
-//	std::cout << "PWD: "<< curr_path << std::endl; //TODO: =----= УДАЛИТЬ
-//	full_path.append(curr_path);
-//	full_path.append(path);
-//	std::cout << "PATH: "<< path << std::endl; //TODO: =----= УДАЛИТЬ
-
 	struct stat	s;
 
 	if (stat(path.c_str(), &s) == -1)
@@ -275,20 +267,15 @@ std::string putDelete(Request &request, uint32_t &statusCode)
 {
 	std::string _url = request.getUrl(statusCode);
 
-//	//TODO: удалить
-//	std::cout << "URL: " << _url << std::endl;
-//	std::cout << "METHOD: " << request.getMethod() << std::endl;
-//	std::cout << "STATUS: " << statusCode << std::endl;
-
 	if (statusCode == 1) // если автоиндекс
 		return (_url);
 	// если метод PUT || POST
-	else if (request.getMethod() == "PUT" || (request.getMethod() == "POST" && statusCode == 201))
+	else if (request.GetMethod() == "PUT" || (request.GetMethod() == "POST" && statusCode == 201))
 	{
 		char *home = getenv("HOME");
-		int pos = _url.find(request.getLocation()->GetLocationPath());
+		int pos = _url.find(request.GetLocation()->GetLocationPath());
 		if (home)
-			_url =  std::string(home) + "/Downloads" + request.getLocation()->GetLocationPath() + _url.substr(_url.find_last_of('/') + 1);
+			_url =  std::string(home) + "/Downloads" + request.GetLocation()->GetLocationPath() + _url.substr(_url.find_last_of('/') + 1);
 		else
 			_url =  "/var/www/Downloads" + _url.substr(pos);
 		std::ofstream newFile(_url);
@@ -296,30 +283,21 @@ std::string putDelete(Request &request, uint32_t &statusCode)
 			statusCode = 204;
 		else
 		{
-			std::string const &body(request.getBody());
+			std::string const &body(request.GetBody());
 			newFile.write(body.c_str(), body.size());
 			newFile.close();
 			statusCode = 201;
 		}
 	}
-	else if (request.getMethod() == "DELETE")
+	else if (request.GetMethod() == "DELETE")
 	{
 		if (access(_url.c_str() , W_OK) == -1 || remove(_url.c_str()) == -1)
 			statusCode = 403;
 		else
 			statusCode = 204;
-		_url = _url.substr(_url.find(request.getLocation()->GetRoot()));
+		_url = _url.substr(_url.find(request.GetLocation()->GetRoot()));
 	}
 	return _url;
-}
-
-std::size_t	skipWhiteSpaces(std::string const &str, std::size_t start)
-{
-	if (start >= str.length())
-		return str.length();
-	while (start < str.length() and isCharWhiteSpace(str[start]))
-		start++;
-	return start;
 }
 
 bool	isCharWhiteSpace(unsigned char c)

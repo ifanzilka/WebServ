@@ -13,13 +13,13 @@ Response::Response(Request &request) :
 	setErrorPages(); // TODO: заменить
 
 	_contentType = "text/html";
-	if ((_statusCode = request.getErrorStatus()) == 0)
+	if ((_statusCode = request.GetStatusCode()) == 0)
 	{
 		_bodySize = 0;
-		_reqHeaders = request.getHeaders();
-		_method = request.getMethod();
+		_reqHeaders = request.GetHeaders();
+		_method = request.GetMethod();
 		_url = putDelete(request, _statusCode);
-		_reqLocation = request.getLocation();
+		_reqLocation = request.GetLocation();
 		_autoindex = _statusCode == 1;
 	}
 	if (_statusCode < 399 && _statusCode != 1 && _method != "PUT" && _method != "DELETE")
@@ -36,9 +36,9 @@ Response::Response(Request &request) :
 		else if (_statusCode != 301 && _method != "PUT" && _method != "DELETE")
 		{
 			int cgNum;
-			if ((cgNum = checkCgi(request.getLocation()->getCgi(), _url)) > 0)
+			if ((cgNum = checkCgi(request.GetLocation()->getCgi(), _url)) > 0)
 			{
-				_cgiPtr = new CGI(request, request.getLocation()->getCgi(), _FILE);
+				_cgiPtr = new CGI(request, request.GetLocation()->getCgi(), _FILE);
 				_contentType = file.fExtension;
 				try
 				{
@@ -78,17 +78,17 @@ char *Response::makeBody(int &readSize)
 	{
 		if (_url != "ERROR" && !_autoindex)
 		{
-			_body = new char[SEND_BUFFER_SIZZ];
-			memset(_body, 0, SEND_BUFFER_SIZZ);
+			_body = new char[SEND_BUFFER_SIZE];
+			memset(_body, 0, SEND_BUFFER_SIZE);
 			if (_cgiPtr && _cgiPtr->isReadable())
 			{
-				readSize = read(_cgiFd[0], _body, SEND_BUFFER_SIZZ);
+				readSize = read(_cgiFd[0], _body, SEND_BUFFER_SIZE);
 				if (readSize == 0 || readSize == -1)
 					_cgiPtr->toRead(false);
 			}
 			else
 			{
-				_FILE.read(_body, SEND_BUFFER_SIZZ);
+				_FILE.read(_body, SEND_BUFFER_SIZE);
 				readSize = _FILE.gcount();
 			}
 			if (_FILE.eof())

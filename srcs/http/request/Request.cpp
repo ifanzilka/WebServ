@@ -1,56 +1,28 @@
 #include "Request.hpp"
 
-Request::Request(std::multimap<std::string, LocationData> &locations)
-		:	_allLocations(locations),
-			_location(nullptr),
-			_bodySize(0),
-			_chunkSize(0),
-			_parseState(START_LINE),
-			_buffer(new char[RECV_BUFFER_SIZE + 1]),
-			_errorStatus(0),
-			_isReqDone(false),
-			_isChunkSize(false)
-{}
-
-Request::~Request()
+Request::Request(std::multimap<std::string, LocationData> &locations, ServerKqueue &server_api)
+	:	_allLocations(locations), _location(nullptr),
+		_server_api(server_api),
+		_parseState(START_LINE),
+		_buffer(new char[RECV_BUFFER_SIZE + 1])
 {
-	delete [] _buffer;
+	_client_fd = 0;
+	_bodySize = 0;
+	_chunkSize = 0;
+	_hasChunk = false;
+	_status_code = 0;
 }
 
-char	*Request::GetBuffer(void) const
-{
-	return _buffer;
-}
-
-void	Request::setErrorStatus(const int s)
-{
-	_errorStatus = s;
-}
-
-uint32_t	Request::getErrorStatus(void) const
-{
-	return _errorStatus;
-}
-
-std::map<std::string, std::string>	&Request::getHeaders(void)
-{
-	return _headers;
-}
-
-std::string	Request::getMethod(void) const
-{
-	return _method;
-}
-
-const LocationData	*Request::getLocation(void) const
-{
-	return _location;
-}
-
-std::string	Request::getBody(void)
-{
-	return _body;
-}
+Request::~Request() { delete [] _buffer; }
+void										Request::SetClientFd(const std::uint8_t &fd) { _client_fd = fd; }
+void										Request::SetStatusCode(const std::uint32_t &status_code) { _status_code = status_code; }
+std::string									Request::GetURIParameters(void) { return (_uri_parameters); }
+const std::map<std::string, std::string>	&Request::GetHeaders(void) const { return (_headers); }
+const std::uint32_t							&Request::GetStatusCode(void) const { return (_status_code); }
+const std::string							&Request::GetMethod(void) const { return (_method); }
+const std::string							&Request::GetBody(void) { return (_body); }
+const LocationData							*Request::GetLocation(void) const { return (_location); }
+char										*Request::GetBuffer(void) const { return (_buffer); }
 
 void	Request::getUrlEncodedBody(std::map<std::string, std::string> &queryBody)
 {
@@ -65,31 +37,44 @@ void	Request::getUrlEncodedBody(std::map<std::string, std::string> &queryBody)
 	{
 		pos = tmp.find("&");
 		pair.first = tmp.substr(0, tmp.find("="));
-		parsePercent(pair.first);
+		ParsePercentData(pair.first);
 		pair.second = tmp.substr(tmp.find("=") + 1, pos - pair.first.length() - 1);
-		parsePercent(pair.second);
+		ParsePercentData(pair.second);
 		queryBody.insert(pair);
 		tmp.erase(0, pos + 1);
 	}
 }
 
-std::string	Request::getQueryString(void)
+void Request::ReadRequestData(size_t data_size)
 {
-	return _query;
+	std::string	data;
+
+	data = _tmpBuffer;
+
+	_buffer[data_size] = '\0';
+	data.append(_buffer, data_size);
+
+	if (_parseState == END_STATE)
+		resetRequest();
+	if (_parseState == START_LINE || _parseState == HEADER_LINE)
+		ReadFirstBlock(data); /** чтение первой строки и заголовков */
+	if (_parseState == BODY_LINE)
+	{
+		if (_transferEncoding == "chunked")
+			saveChunkedBody(data);
+		else
+			saveSimpleBody(data);
+	}
+	_tmpBuffer = data;
+	if (_parseState == END_STATE)
+	{
+		_server_api.enableWriteEvent(_client_fd, &_server_api);
+	}
 }
 
 std::string	Request::validateUrl(std::string &fullPath, std::uint32_t &status, std::uint8_t mode)
 {
 	std::string	tmp;
-
-//	std::cout << PURPLE"==============VALIDATE URL=============="NORM << std::endl;
-//	std::cout << "FULL_PATH: " << fullPath << std::endl;	//TODO: удалить
-//	std::cout << "Status: " << status << std::endl;	//TODO: удалить
-//	std::cout << "MODE: " << (mode == NOT_FOUND ? "NOT_FOUND"
-//		: mode == DIR_MODE ? "DIR_MODE"
-//		: mode == FILE_MODE ? "FILE_MODE"
-//		: mode == UNKNOWN_MODE ? "UKNOWN_MODE" : 0) << std::endl;	//TODO: удалить
-//	std::cout << PURPLE"========================================="NORM << std::endl;
 
 	if (mode == DIR_MODE) /** DIRECTORY */
 	{
@@ -158,18 +143,7 @@ std::string	Request::getUrl(std::uint32_t &status)
 	if (fullPath[fullPath.length() - 1] == '/')
 		fullPath.pop_back();
 
-//	//TODO: =----= УДАЛИТЬ
-//	std::cout << PURPLE"==============GET_URL=============="NORM << std::endl;
-//	std::cout << *_location << std::endl;
-//	std::cout << "FullPath: " << fullPath << std::endl;
-
-//	std::cout << PURPLE"==================================="NORM << std::endl;
-
-//	TODO: =----= УДАЛИТЬ
-//	std::cout << BLUE"==============IsDirOrFile=============="NORM << std::endl;
 	mode = isDirOrFile(fullPath);
-//	std::cout << BLUE"========================================"NORM << std::endl;
-	//TODO: проверить валидность открытия 404 страницы
 	if (mode == NOT_FOUND && _method != "POST" && _method != "PUT")
 	{
 		status = 404;
@@ -178,53 +152,7 @@ std::string	Request::getUrl(std::uint32_t &status)
 	return (validateUrl(fullPath, status, mode));
 }
 
-void	Request::parsePercent(std::string &strRef)
-{
-	std::stringstream	ss;
-	std::string			tmp;
-	int					c;
-
-	for (std::size_t i = 0; i < strRef.length(); i++)
-	{
-		if (strRef[i] == '%')
-		{
-			try
-			{
-				ss << std::hex << strRef.substr(i + 1, 2);
-				ss >> c;
-				tmp = strRef.substr(i + 3);
-				strRef.erase(i);
-				strRef.push_back(static_cast<char>(c));
-				strRef.append(tmp);
-				ss.clear();
-			}
-			catch(std::exception &e)
-			{
-				throw RequestException(400, "Bad Request");
-			}
-		}
-		else if (strRef[i] == '+')
-			strRef = strRef.substr(0, i) + " " + strRef.substr(i + 1);
-	}
-	return;
-}
-
-void	Request::parseUri(void)
-{
-	std::size_t	pos;
-
-	pos = _uri.find("?");
-	if (pos != std::string::npos)
-	{
-		_query = _uri.substr(pos + 1);
-		_uri.erase(pos);
-	}
-
-	parsePercent(_uri);
-	return;
-}
-
-const LocationData	*Request::getLoc(void)
+const LocationData	*Request::GetValidLocation(void)
 {
 	std::string	tmp;
 	std::string	tmp1;
@@ -251,8 +179,9 @@ const LocationData	*Request::getLoc(void)
 			if (!tmp.length())
 				tmp = "/";
 			(j->first != "/" and j->first[j->first.length() - 1] == '/') ?
-					tmp1 = j->first.substr(0, j->first.find_last_of("/")) : tmp1 = j->first;
-			if (tmp == tmp1) {
+				tmp1 = j->first.substr(0, j->first.find_last_of("/")) : tmp1 = j->first;
+			if (tmp == tmp1)
+			{
 				if (isLastSlash)
 					_uri.pop_back();
 				return &j->second;
@@ -262,56 +191,6 @@ const LocationData	*Request::getLoc(void)
 		tmp = tmp.substr(0, lastSlashPos);
 	}
 	return nullptr;
-}
-
-void	Request::validateStartLine(void)
-{
-	_location = getLoc(); /** получение location под _uri */
-	if (!_location)
-		throw RequestException(404, "Not Found");
-//	std::vector<std::string>::const_iterator i = _location->GetMethods().begin();
-//	for (; i != _location->methods.end(); i++)
-//	{
-//		if (i->first == _method) {
-//			if (!i->second)
-//				throw RequestException(405, "Method Not Allowed");
-//			break;
-//		}
-//	}
-//	if (i == _location->methods.end())
-//		throw RequestException(400, "Bad Request");
-	//TODO: протокол может быть 1.0
-	if (_protocol != HTTP_PROTOCOL)
-		throw RequestException(505, "Http Version Not Supported");
-	_maxBodySize = _location->GetClientBufferBodySize();
-	parseUri();
-	return;
-}
-
-void	Request::saveStartLine(std::string startLine)
-{
-	std::size_t	lfPos;
-
-	if (!startLine.length())
-		throw RequestException(400, "Bad Request");
-	lfPos = startLine.find(' '); // поиск первого пробела из строки 'GET / HTTP/1.1'
-	if (lfPos == std::string::npos)
-		throw RequestException(400, "Bad Request");
-	_method = startLine.substr(0, lfPos); // вырезание типа метода (GET)
-	startLine.erase(0, skipWhiteSpaces(startLine, lfPos)); // удаление сохраненного
-
-	lfPos = startLine.find(' '); // поиск следующего пробела
-	if (lfPos == std::string::npos)
-		throw RequestException(400, "Bad Request");
-	_uri = startLine.substr(0, lfPos); // вырезание URI из строки '/ HTTP/1.1'
-	startLine.erase(0, skipWhiteSpaces(startLine, lfPos)); // удаление сохраненного
-	_protocol = startLine;
-	// удаление пустых символов
-	_protocol.erase(std::remove_if(_protocol.begin(),
-								   _protocol.end(), &isCharWhiteSpace), _protocol.end());
-
-	validateStartLine(); /** проверка стартовой линии */
-	_parseState = HEADER_LINE;
 }
 
 void	Request::saveHeaderLine(std::string headerLine)
@@ -359,36 +238,14 @@ void	Request::resetRequest(void)
 	_method.clear();
 	_protocol.clear();
 	_uri.clear();
-	_query.clear();
+	_uri_parameters.clear();
 	_body.clear();
 	_tmpBuffer.clear();
-	_isChunkSize = false;
-	_isReqDone = false;
-	_errorStatus = 0;
+	_hasChunk = false;
+	_status_code = 0;
 	_location = nullptr;
 }
 
-void Request::saveStartLineHeaders(std::string &data)
-{
-	std::size_t	newLinePos;
-
-	newLinePos = data.find(LF);
-	while (newLinePos != std::string::npos and (_parseState != BODY_LINE and _parseState != END_STATE))
-	{
-		if (_parseState == START_LINE)
-		{
-			saveStartLine(data.substr(0, newLinePos));
-			data.erase(0, newLinePos + 1);
-		}
-		if (_parseState == HEADER_LINE)
-		{
-			newLinePos = data.find(LF);
-			saveHeaderLine(data.substr(0, newLinePos));
-			data.erase(0, newLinePos + 1);
-		}
-		newLinePos = data.find(LF);
-	}
-}
 
 void	Request::parseChunkedBody(std::string &data)
 {
@@ -406,7 +263,7 @@ void	Request::parseChunkedBody(std::string &data)
 	}
 	if (!_chunkSize)
 	{
-		_isChunkSize = false;
+		_hasChunk = false;
 		i += 2;
 	}
 	data.erase(0, i);
@@ -429,7 +286,7 @@ void	Request::parseChunkSize(std::string &data)
 	ss >> _chunkSize;
 	if (!_chunkSize)
 		_parseState = END_STATE;
-	_isChunkSize = true;
+	_hasChunk = true;
 	data.erase(0, pos + 1);
 }
 
@@ -437,9 +294,9 @@ void	Request::saveChunkedBody(std::string &data)
 {
 	while (_parseState != END_STATE)
 	{
-		if (!_isChunkSize)
+		if (!_hasChunk)
 			parseChunkSize(data);
-		if (_isChunkSize and _parseState != END_STATE)
+		if (_hasChunk && _parseState != END_STATE)
 			parseChunkedBody(data);
 	}
 }
@@ -461,32 +318,6 @@ void	Request::saveSimpleBody(std::string &data)
 	return;
 }
 
-bool Request::saveRequestData(size_t data_size)
-{
-	std::string	data;
-
-	data = _tmpBuffer;
-
-	_buffer[data_size] = '\0';
-	data.append(_buffer, data_size);
-
-	if (_parseState == END_STATE)
-		resetRequest();
-	if (_parseState == START_LINE || _parseState == HEADER_LINE)
-		saveStartLineHeaders(data);
-	if (_parseState == BODY_LINE)
-	{
-		if (_transferEncoding == "chunked")
-			saveChunkedBody(data);
-		else
-			saveSimpleBody(data);
-	}
-	_tmpBuffer = data;
-	if (_parseState == END_STATE)
-		_isReqDone = true;
-	return _isReqDone;
-}
-
 void Request::PrintAllRequestData()
 {
 	std::cout << "REQUEST DATA PARSING RESULT" << std::endl;
@@ -495,9 +326,8 @@ void Request::PrintAllRequestData()
 		: (_parseState == BODY_LINE) ? "BODY_LINE"
 		: (_parseState == HEADER_LINE) ? "HEADER_LINE"
 		: (_parseState == START_LINE) ? "START_LINE" : "ERROR") << std::endl;
-	std::cout << "IsReqDone? : " << (_isReqDone == false ? "false" : "true") << std::endl;
 
-	std::cout << "ErrorStatus: " << _errorStatus << std::endl;
+	std::cout << "StatusCode: " << _status_code << std::endl;
 
 	std::cout << "StarLine: " <<
 		_method << " " << _uri << " " << _protocol << std::endl;
@@ -517,6 +347,6 @@ void Request::PrintAllRequestData()
 	std::cout << "TransferEncoding: " << (_transferEncoding.empty() ? "empty" : _transferEncoding) << std::endl;
 	std::cout << "_maxBodySize: " << _maxBodySize << std::endl;
 	std::cout << "_chunkSize: " << _chunkSize << std::endl;
-	std::cout << "_isChunkSize: " << _isChunkSize << std::endl;
-	std::cout << "_query: " << (_query.empty() ? "empty" : _query) << std::endl;
+	std::cout << "_hasChunk: " << _hasChunk << std::endl;
+	std::cout << "_uri_parameters: " << (_uri_parameters.empty() ? "empty" : _uri_parameters) << std::endl;
 }
