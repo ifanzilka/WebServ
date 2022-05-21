@@ -56,7 +56,7 @@ void ServerCore::StartWebServer() const
 		{
 			if (!event)
 			{
-				std::cout << BLUE"WAITING..."NORM << std::endl;
+				std::cout << B_YELLOW"WAITING..."NORM << std::endl; //TODO: удалить
 			}
 			else if (event == EV_EOF)
 			{
@@ -64,41 +64,24 @@ void ServerCore::StartWebServer() const
 			}
 			else if (event == EVFILT_READ)
 			{
-				std::cout << YELLOW"READ"NORM << std::endl;
+//				std::cout << YELLOW"READ"NORM << std::endl;
 				messenger.ReadRequest(client_fd);
 				messenger.ClearValidLocations();
 			}
 			else if (event == EVFILT_WRITE)
 			{
-				std::cout << PURPLE"WRITE"NORM << std::endl;
+//				std::cout << PURPLE"WRITE"NORM << std::endl;
+				messenger.MakeResponse();
 			}
 			else
 			{
-				std::cout << RED"FUUUUUCK"NORM << std::endl;
+				std::cout << B_RED"FUUUUUCK"NORM << std::endl;
 			}
 		}
 		catch (RequestException &e)
 		{
 			std::cout << e.what() << std::endl;
 		}
-//		if (serverApi->CheckAccept() != 0)
-//		{
-//			continue;
-//		}
-//		client_fd = serverApi->CheckRead();
-//		if (client_fd != 0)
-//		{
-//			try
-//			{
-//				messenger.StartMessaging(client_fd);
-//				messenger.ClearValidLocations();
-//			}
-//			catch (std::exception &e)
-//			{
-//				std::cout << e.what() << std::endl;
-//			}
-//			continue;
-//		}
 	}
 
 	delete serverApi;

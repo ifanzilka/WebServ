@@ -29,12 +29,12 @@ class Messenger
 	public:
 		Messenger(ServerData &server_data, ServerKqueue &server_api);
 		~Messenger();
+		void	MakeResponse();
 		void	ReadRequest(const int client_fd);
 		void	ClearValidLocations();
 
 		bool	isClosed;
 	private:
-		void			MakeResponse();
 		bool			_toServe; // флаг обозначающий, что SaveRequestData закончен и можно отправлять данные
 
 		int			_client_fd;

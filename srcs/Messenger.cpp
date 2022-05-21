@@ -12,11 +12,6 @@ Messenger::Messenger(ServerData &server_data, ServerKqueue &server_api)
 {
 	isClosed = false;
 	_client_fd = 0;
-
-//	_client_data = new HttpData();
-//	_client_data->_client_fd = 0;
-//	_client_data->_hasBody = false;
-//	_client_data->_body_length = 0;
 }
 
 Messenger::~Messenger()
@@ -50,8 +45,8 @@ void Messenger::ReadRequest(const int client_fd)
 
 		if (_toServe)
 		{
-			_server_api.disableReadEvent(client_fd, &_server_api);
-//			_server_api.enableWriteEvent(client_fd, &_server_api);
+//			_server_api.disableReadEvent(_client_fd, &_server_api);
+			_server_api.enableWriteEvent(_client_fd, &_server_api);
 		}
 
 //		MakeResponse();
@@ -73,6 +68,7 @@ void Messenger::MakeResponse()
 		_response->SendResponse(_client_fd);
 		if (_response->isSent())
 		{
+			_server_api.disableWriteEvent(_client_fd, &_server_api);
 			_toServe = false;
 			delete _response;
 			_response = nullptr;

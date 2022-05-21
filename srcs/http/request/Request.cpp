@@ -349,6 +349,26 @@ void	Request::saveHeaderLine(std::string headerLine)
 		_transferEncoding = headerValue; // получение типа кодирования
 }
 
+void	Request::resetRequest(void)
+{
+	_headers.clear();
+	_maxBodySize = 0;
+	_bodySize = 0;
+	_chunkSize = 0;
+	_parseState = START_LINE;
+	_transferEncoding.clear();
+	_method.clear();
+	_protocol.clear();
+	_uri.clear();
+	_query.clear();
+	_body.clear();
+	_tmpBuffer.clear();
+	_isChunkSize = false;
+	_isReqDone = false;
+	_errorStatus = 0;
+	_location = nullptr;
+}
+
 void Request::saveStartLineHeaders(std::string &data)
 {
 	std::size_t	newLinePos;
@@ -356,6 +376,8 @@ void Request::saveStartLineHeaders(std::string &data)
 	newLinePos = data.find(LF);
 	while (newLinePos != std::string::npos and (_parseState != BODY_LINE and _parseState != END_STATE))
 	{
+		if (_parseState == END_STATE)
+			resetRequest();
 		/** */
 		if (_parseState == START_LINE)
 		{

@@ -59,7 +59,7 @@ class Request
 
 	private:
 		void	saveStartLineHeaders(std::string &req_data);
-
+		void	resetRequest(void);
 
 		std::multimap<std::string, LocationData> const	&_allLocations;
 		const LocationData								*_location;

@@ -80,7 +80,7 @@ int	ServerKqueue::WaitEvent(int &client_fd)
 			client_fd = CheckAccept();
 			Logger(GREEN, "Connect fd(" + std::to_string(client_fd) + ") ✅ ");
 		}
-		else if (_evList[i].filter & EVFILT_READ)
+		else if (_evList[i].filter == EVFILT_READ)
 		{
 //			ReadFd(event_fd);
 			event_flag = EVFILT_READ;
@@ -157,6 +157,8 @@ void ServerKqueue::disableReadEvent(int socket, void *udata)
 	{
 		std::cerr << "ERROR disabling event for read" << std::endl;
 	}
+
+	std::cout << B_CYAN"READ EVENT DISABLED"NORM << std::endl; //TODO: удалить
 }
 
 void ServerKqueue::enableWriteEvent(int socket, void *udata)
@@ -167,6 +169,8 @@ void ServerKqueue::enableWriteEvent(int socket, void *udata)
 	{
 		std::cerr << "ERROR enabling event for write" << std::endl;
 	}
+
+	std::cout << B_GREEN"WRITE EVENT ENABLED"NORM << std::endl; //TODO: удалить
 }
 
 void ServerKqueue::disableWriteEvent(int socket, void *udata)
@@ -177,6 +181,8 @@ void ServerKqueue::disableWriteEvent(int socket, void *udata)
 	{
 		std::cerr << "ERROR disabling event for write" << std::endl;
 	}
+
+	std::cout << B_CYAN"WRITE EVENT DISABLED"NORM << std::endl; //TODO: удалить
 }
 
 void ServerKqueue::addReadEvent(int socket, void *udata)
@@ -187,6 +193,8 @@ void ServerKqueue::addReadEvent(int socket, void *udata)
 	{
 		std::cerr << "ERROR adding event for write" << std::endl;
 	}
+
+	std::cout << B_CYAN"READ EVENT ADDED"NORM << std::endl; //TODO: удалить
 //	update_len++;
 }
 
@@ -198,6 +206,8 @@ void ServerKqueue::addWriteEvent(int socket, void *udata)
 	{
 		std::cerr << "ERROR adding event for write" << std::endl;
 	}
+
+	std::cout << B_CYAN"WRITE EVENT ADDED"NORM << std::endl; //TODO: удалить
 //	update_len++;
 }
 
@@ -209,6 +219,7 @@ void ServerKqueue::addWriteEvent(int socket, void *udata)
  * */
 void ServerKqueue::AddFd(int fd)
 {
+	std::cout << BLUE"STARTING A NEW CONNECTION..."NORM << std::endl; //TODO: удалить
 	Logger(B_GRAY, "Add fd " + std::to_string(fd));
 
 	addReadEvent(fd, this);

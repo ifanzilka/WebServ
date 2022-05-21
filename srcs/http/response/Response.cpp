@@ -147,11 +147,11 @@ void Response::SendResponse(int client_fd)
 {
 	int	res = 0;
 
-	std::cout << PURPLE"====================== SendResponse() ======================"NORM << std::endl;
-	std::cout << BLUE"Is file open?: "NORM << (_FILE.is_open() ? "yes" : "no") << std::endl;
-	std::cout << BLUE"StatusCode: "NORM << _statusCode << std::endl;
-	std::cout << BLUE"Autoindex: "NORM << (_autoindex ? "on" : "off") << std::endl;
-	std::cout << PURPLE"============================================================"NORM << std::endl;
+//	std::cout << PURPLE"====================== SendResponse() ======================"NORM << std::endl;
+//	std::cout << BLUE"Is file open?: "NORM << (_FILE.is_open() ? "yes" : "no") << std::endl;
+//	std::cout << BLUE"StatusCode: "NORM << _statusCode << std::endl;
+//	std::cout << BLUE"Autoindex: "NORM << (_autoindex ? "on" : "off") << std::endl;
+//	std::cout << PURPLE"============================================================"NORM << std::endl;
 
 	if (_inProc == false && (!_cgiPtr || _cgiPtr->isReadable()))
 	{
@@ -167,7 +167,6 @@ void Response::SendResponse(int client_fd)
 	}
 	else if (_FILE.is_open() || _statusCode != 200 || _autoindex || _cgiPtr->isReadable())
 	{
-		std::cout << "WHAT\n" << std::endl; //TODO: удалить
 		int to_send, pos, tries;
 		res = 0, pos = 0, tries = 0;
 		makeBody(to_send);
