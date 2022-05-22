@@ -93,7 +93,7 @@ void	Request::SaveProtocol(std::string &fst_line, std::size_t &space_ind)
 	_protocol = fst_line;
 	// удаление пустых символов
 	_protocol.erase(std::remove_if(_protocol.begin(),
-		_protocol.end(), &isCharWhiteSpace), _protocol.end());
+		_protocol.end(), &IsChar), _protocol.end());
 	//TODO: протокол может быть 1.0
 	if (_protocol != HTTP_PROTOCOL)
 		throw RequestException(505, "Http Version Not Supported");
@@ -223,7 +223,7 @@ void	Request::SaveHeaderLine(std::string req_data)
 bool	Request::CheckHeaderLineState(std::string &req_data)
 {
 	req_data.erase(std::remove_if(req_data.begin(),
-		req_data.end(), &isCharWhiteSpace), req_data.end()); // удаление пробелов
+		req_data.end(), &IsChar), req_data.end()); // удаление пробелов
 	if (!req_data.length())
 	{
 		if (_headers.find("Host") == std::end(_headers)) // если нет "HOST"

@@ -77,7 +77,7 @@ void	Response::FillFileInfo(const std::string &file_path, t_fileInfo *const file
 			return ;
 		FILE.open(file_path);
 		file_t->fLength = buff.st_size;
-		file_t->fExtension = getExtension(file_path);
+		file_t->fExtension = GetFileExtension(file_path);
 		if (FILE.is_open())
 			file_t->fStatus = 200;
 		else

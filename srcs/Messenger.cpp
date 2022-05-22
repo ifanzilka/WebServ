@@ -32,7 +32,7 @@ void Messenger::ReadRequest(const int &client_fd)
 	try
 	{
 		_request.ReadRequestData(read_bytes);
-		_request.PrintAllRequestData(); // TODO: вывод статистики парсинга
+//		_request.PrintAllRequestData(); // TODO: вывод статистики парсинга
 	}
 	catch (const RequestException &e)
 	{

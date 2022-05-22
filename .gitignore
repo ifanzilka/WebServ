@@ -11,3 +11,6 @@ webserv_dev
 *.txt
 .notebook/
 webserv.dSYM
+YoupiBanane/
+cgi_tester
+tester

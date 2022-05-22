@@ -20,6 +20,7 @@ class Response
 		~Response();
 		void	SendResponse(int client_fd);
 		bool	isSent() { return (!_leftBytes); }
+
 	private:
 
 	/**
@@ -30,6 +31,7 @@ class Response
 		void		FillFileInfo(const std::string &file_path, t_fileInfo *const file_t, std::ifstream &FILE);
 		std::string	MakeFilePath(Request &request, uint32_t &status_code);
 		void 		CollectStartData(void);
+
 
 
 

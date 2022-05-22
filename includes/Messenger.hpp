@@ -16,6 +16,7 @@ class Messenger
 		void	ReadRequest(const int &client_fd);
 		void	ClearValidLocations();
 	private:
+
 		std::multimap<int, std::string>	_valid_locations;
 		int			_client_fd;
 

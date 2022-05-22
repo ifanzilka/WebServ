@@ -107,7 +107,7 @@ const std::string	Request::GetUrl(std::uint32_t &status)
 	if (full_path[full_path.length() - 1] == '/')
 		full_path.pop_back();
 
-	mode = GetTypeOfData(full_path);
+	mode = GetDataType(full_path);
 	if (mode == NOT_FOUND && _method != "POST" && _method != "PUT")
 	{
 		status = 404;
@@ -134,7 +134,7 @@ std::string	Request::ValidateUrl(std::string &full_path, std::uint32_t &status_c
 			return (full_path);
 		}
 		tmp = full_path + "/" + _location->GetIndex(); // получение полного пути с страницей (index.html)
-		if (GetTypeOfData(tmp) == FILE_MODE)
+		if (GetDataType(tmp) == FILE_MODE)
 		{
 			if (!access(tmp.c_str(), R_OK))
 				return (tmp); // возврат пути к файлу в дирректории

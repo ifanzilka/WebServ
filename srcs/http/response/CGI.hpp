@@ -17,7 +17,6 @@ class CGI
 
 		void	toRead(bool flag){ _toRead = flag; }
 		const int	*CGI_Init(const int &cgi_amnt, pid_t &pid);
-//		int		*initCGI(int cgiNum, pid_t &pid);
 		bool	isReadable(void){ return _toRead; }
 	private:
 		std::vector<char **>	makeDataForExec(std::string &path);

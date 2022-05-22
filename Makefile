@@ -43,9 +43,9 @@ SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POL
 	srcs/http/request/Request.cpp \
 	srcs/http/request/read_first_block.cpp \
 	srcs/http/request/read_body.cpp \
-	srcs/http/request/tools.cpp \
+	srcs/server_utils.cpp \
 	srcs/http/response/Response.cpp \
-	srcs/http/response/collect_data_methods.cpp \
+	srcs/http/response/collect_response_data.cpp \
 	srcs/http/response/CGI.cpp
 
 FLAGS = -D KQUEUE
@@ -70,5 +70,15 @@ messenger:
 
 test:
 	$(CXX) -I$(INC_DIR) $(SRCS) $(SRCS_SELECT)  srcs/server/ServerCore.cpp main5.cpp
+
+youpi:
+	mkdir YoupiBanane
+	touch YoupiBanane/youpi.bad_extension
+	touch YoupiBanane/youpi.bla
+	mkdir YoupiBanane/nop
+	touch YoupiBanane/nop/youpi.bad_extension
+	touch YoupiBanane/nop/other.pouic
+	mkdir YoupiBanane/Yeah
+	touch YoupiBanane/Yeah/not_happy.bad_extension
 
 $(NAME): 		$(INC_DIR) $(OBJ)
