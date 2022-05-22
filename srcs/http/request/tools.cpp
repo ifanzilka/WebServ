@@ -11,24 +11,6 @@ off_t getFdLen(int fd)
 	return (len);
 }
 
-int  checkCgi(const std::multimap<std::string, std::string> &CGI, std::string fPath)
-{
-	int			res = 0;
-	std::string ext = "." + fPath.substr(fPath.find_last_of('.') + 1);
-
-	std::multimap<std::string, std::string>::const_iterator i = CGI.begin();
-	for (; i != CGI.end(); i++)
-	{
-		if (ext == i->first)
-		{
-			if (access(i->second.c_str(), X_OK))
-				return (-1);
-			res++;
-		}
-	}
-	return (res);
-}
-
 static std::string	buildPathToFile(std::string const &fullPath, const LocationData *location, std::string fileName)
 {
 	std::string	resultPath;
@@ -217,39 +199,6 @@ std::string getExtension(std::string fPath)
 	return (ext);
 }
 
-/** заполнение информации о файле по полученнуму URL */
-bool	urlInfo(std::string fPath, t_fileInfo *fStruct, std::ifstream &FILE)
-{
-	struct stat buff;
-	int res;
-
-	res = stat(fPath.c_str(), &buff);
-	if (fStruct != nullptr && res != -1)
-	{
-		// S_ISREG() - возвращает true, если аргумент является обычным файлом
-		// st.mode -  тип файла */
-		fStruct->fType = static_cast<fileType>(S_ISREG(buff.st_mode)); // файл, папка или none
-		if (fStruct->fType == NONEXIST)
-			return (false);
-		FILE.open(fPath);
-		fStruct->fLength = buff.st_size;
-		fStruct->fExtension = getExtension(fPath);
-		if (FILE.is_open())
-			fStruct->fStatus = 200;
-		else
-		{
-			fStruct->fStatus = 403;
-			FILE.close();
-		}
-	}
-	else if (res < 1)
-	{
-		fStruct->fStatus = 404;
-		return (false);
-	}
-	return (true); // TODO: удалить
-}
-
 std::uint8_t	GetTypeOfData(const std::string &path)
 {
 	struct stat	s;
@@ -263,42 +212,6 @@ std::uint8_t	GetTypeOfData(const std::string &path)
 	return (UNKNOWN_MODE);
 }
 
-std::string putDelete(Request &request, uint32_t &statusCode)
-{
-	std::string _url = request.GetUrl(statusCode);
-
-	if (statusCode == 1) // если автоиндекс
-		return (_url);
-	// если метод PUT || POST
-	else if (request.GetMethod() == "PUT" || (request.GetMethod() == "POST" && statusCode == 201))
-	{
-		char *home = getenv("HOME");
-		int pos = _url.find(request.GetLocation()->GetLocationPath());
-		if (home)
-			_url =  std::string(home) + "/Downloads" + request.GetLocation()->GetLocationPath() + _url.substr(_url.find_last_of('/') + 1);
-		else
-			_url =  "/var/www/Downloads" + _url.substr(pos);
-		std::ofstream newFile(_url);
-		if (!newFile.is_open())
-			statusCode = 204;
-		else
-		{
-			std::string const &body(request.GetBody());
-			newFile.write(body.c_str(), body.size());
-			newFile.close();
-			statusCode = 201;
-		}
-	}
-	else if (request.GetMethod() == "DELETE")
-	{
-		if (access(_url.c_str() , W_OK) == -1 || remove(_url.c_str()) == -1)
-			statusCode = 403;
-		else
-			statusCode = 204;
-		_url = _url.substr(_url.find(request.GetLocation()->GetRoot()));
-	}
-	return _url;
-}
 
 bool	isCharWhiteSpace(unsigned char c)
 {

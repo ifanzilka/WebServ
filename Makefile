@@ -41,10 +41,11 @@ SRCS_PARSER_CONFIG = srcs/parse_config/LocationData.cpp srcs/parse_config/Parser
 SRCS_MESSENGER = $(SRCS_PARSER_CONFIG) $(SRCS_KQUEUE) $(SRCS_SELECT)  $(SRCS_POLL) $(SRCS) \
 	srcs/Messenger.cpp srcs/server/ServerCore.cpp \
 	srcs/http/request/Request.cpp \
-	srcs/http/response/Response.cpp \
 	srcs/http/request/read_first_block.cpp \
 	srcs/http/request/read_body.cpp \
 	srcs/http/request/tools.cpp \
+	srcs/http/response/Response.cpp \
+	srcs/http/response/collect_data_methods.cpp \
 	srcs/http/response/CGI.cpp
 
 FLAGS = -D KQUEUE

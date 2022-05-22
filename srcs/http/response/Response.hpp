@@ -21,40 +21,54 @@ class Response
 		void	SendResponse(int client_fd);
 		bool	isSent() { return (!_leftBytes); }
 	private:
-		char		*makeBody(int &readSize);
-		std::string makeHeaders();
-		std::string	makeStatusLine();
-		std::string	getErrorPage();
-		void		setErrorPages();
 
-		/**
-		* CGI PART
-		*/
+	/**
+	* CONSTRUCTOR PART
+	*/
+		uint16_t 	CGI_Amount(const std::multimap<std::string, std::string> &CGI, const std::string &file_path);
+		void		CollectDataForResponse(const t_fileInfo &file);
+		void		FillFileInfo(const std::string &file_path, t_fileInfo *const file_t, std::ifstream &FILE);
+		std::string	MakeFilePath(Request &request, uint32_t &status_code);
+		void 		CollectStartData(void);
+
+
+
+		char				*makeBody(int &readSize);
+		const std::string	&MakeHeaders();
+		const std::string	&MakeStatusLine();
+		std::string			getErrorPage();
+		void				setErrorPages();
+
+
+/**
+ * ====================================
+ * ==            Variables           ==
+ * ====================================
+ */
+
+		/**  CGI variables */
 		pid_t								_pid;
-		int									*_cgiFd;
-		CGI									*_cgiPtr;
+		CGI									*_cgi_ptr;
+		const int							*_cgi_fds;
 
-		/**
-		* RESPONSE_DATA PART
-		*/
-		char*						 		_body;
-
-		std::uint64_t						_leftBytes; // для проверки вся ли информация записалась
-		std::string							_headers;
-		std::string							_statusLine;
-		std::string							_response;
-		bool								_inProc; // false в конце конструктора Response();
-
-		std::ifstream						_FILE;
-		bool								_autoindex;
+		/** Class' variables */
+		std::map<std::string, std::string>	_reqHeaders;
+		std::map<int, std::string>			_errorPages;
 		const LocationData					*_reqLocation;
+		Request								&_request;
+		std::ifstream						_FILE;
+		std::uint64_t						_leftBytes; // для проверки вся ли информация записалась
+		std::uint64_t						_body_size;
+		std::uint32_t						_status_code;
+		std::string							_headers;
+		std::string							_status_line;
+		std::string							_response;
 		std::string							_url;
 		std::string							_method;
-		std::map <std::string, std::string>	_reqHeaders;
-		std::uint64_t						_body_size;
-		uint32_t							_statusCode;
-		std::string							_contentType;
-		std::map<int, std::string>			_errorPages;
+		std::string							_content_type;
+		char*						 		_body;
+		bool								_inProc; // false в конце конструктора Response();
+		bool								_autoindex;
 };
 
 

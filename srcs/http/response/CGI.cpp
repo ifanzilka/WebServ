@@ -147,12 +147,12 @@ void	CGI::runCGIHelper(int *firstReadFromFD, int *lastSendToFD, int cgiNum)
 
 /*	cgiFds[0] - fd to read data from the last cgi script
 	cgiFds[1] - fd to send data to the first cgi script	*/
-int	*CGI::initCGI(int cgiNum, pid_t &pid)
+const int	*CGI::CGI_Init(const int &cgi_amnt, pid_t &pid)
 {
-	int	*cgiFds;
+	int	*cgi_fds;
 	int	mainFD[2][2];
 
-	if (cgiNum < 1)
+	if (cgi_amnt < 1)
 		throw RequestException(502, "cgiNum incorrect");
 	if (pipe(mainFD[0]) == -1 or pipe(mainFD[1]) == -1)
 		throw RequestException(502, "pipes");
@@ -160,15 +160,15 @@ int	*CGI::initCGI(int cgiNum, pid_t &pid)
 	if (_pid == -1)
 		throw RequestException(502, "fork");
 	if (!_pid)
-		runCGIHelper(mainFD[0], mainFD[1], cgiNum);
+		runCGIHelper(mainFD[0], mainFD[1], cgi_amnt);
 
 	close(mainFD[0][0]);
 	close(mainFD[1][1]);
 
-	cgiFds = new int[2];
-	cgiFds[1] = mainFD[0][1];
-	cgiFds[0] = mainFD[1][0];
+	cgi_fds = new int[2];
+	cgi_fds[1] = mainFD[0][1];
+	cgi_fds[0] = mainFD[1][0];
 	pid = _pid;
 
-	return cgiFds;
+	return (cgi_fds);
 }

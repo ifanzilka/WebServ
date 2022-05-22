@@ -44,7 +44,7 @@ class LocationData
 		size_t							GetClientBufferBodySize() const;
 		const std::string				&GetRoot() const;
 		const std::string				&GetFullPath() const;
-		const std::multimap<std::string, std::string> &getCgi() const;
+		const std::multimap<std::string, std::string> &GetCgi() const;
 		const std::string				&GetCgiPath() const;
 		const std::string				&GetCgiExtension() const;
 		const std::string				&GetIndex() const;

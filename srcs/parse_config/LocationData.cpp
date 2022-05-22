@@ -13,9 +13,9 @@ LocationData::LocationData(const LocationData &cpy) { *this = cpy; }
 
 
 
-const std::multimap<std::string, std::string> &LocationData::getCgi() const
+const std::multimap<std::string, std::string> &LocationData::GetCgi() const
 {
-	return _cgi;
+	return (_cgi);
 }
 
 LocationData &LocationData::operator=(const LocationData &cpy)

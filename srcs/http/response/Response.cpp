@@ -4,66 +4,34 @@
 
 #include "Response.hpp"
 
-Response::Response(Request &request) :
-	_body(nullptr),
-	_reqLocation(nullptr),
-	_cgiPtr(nullptr)
+Response::Response(Request &request)
+	:	_request(request),
+		_body(nullptr),
+		_reqLocation(nullptr),
+		_cgi_ptr(nullptr)
 {
 	t_fileInfo file;
 	setErrorPages(); // TODO: заменить
 
-	_contentType = "text/html";
-	if ((_statusCode = request.GetStatusCode()) == 0)
+	_content_type = "text/html";
+	if ((_status_code = request.GetStatusCode()) == 0)
+		CollectStartData();
+
+	if (_status_code < 399 && _status_code != 1 && _method != "PUT" && _method != "DELETE")
 	{
-		_body_size = 0;
-		_reqHeaders = request.GetHeaders();
-		_method = request.GetMethod();
-		_url = putDelete(request, _statusCode);
-		_reqLocation = request.GetLocation();
-		_autoindex = _statusCode == 1;
-	}
-	if (_statusCode < 399 && _statusCode != 1 && _method != "PUT" && _method != "DELETE")
-	{
-		urlInfo(_url, &file,  _FILE);
+		FillFileInfo(_url, &file,  _FILE);
 		if (file.fType == DDIR)
 			file.fStatus = 404;
-		if ((file.fStatus < 200 || file.fStatus > 299) && _statusCode != 301)
+		if ((file.fStatus < 200 || file.fStatus > 299) && _status_code != 301)
 		{
-			_statusCode = file.fStatus;
+			_status_code = file.fStatus;
 			_url = getErrorPage();
-			_contentType = "text/html";
+			_content_type = "text/html";
 		}
-		else if (_statusCode != 301 && _method != "PUT" && _method != "DELETE")
+		else if (_status_code != 301 && _method != "PUT" && _method != "DELETE")
 		{
-			int cgNum;
-			if ((cgNum = checkCgi(request.GetLocation()->getCgi(), _url)) > 0)
-			{
-				_cgiPtr = new CGI(request, request.GetLocation()->getCgi(), _FILE);
-				_contentType = file.fExtension;
-				try
-				{
-					_cgiFd =  _cgiPtr->initCGI(cgNum, _pid);
-				}
-				catch(RequestException &e)
-				{
-					std::cerr << e.what() << " due to " << strerror(errno) << std::endl;
-					_statusCode = 502;
-				}
-				_body_size = file.fLength;
-				_contentType = file.fExtension;
-				_leftBytes = _body_size;
-			}
-			else if (cgNum == -1)
-			{
-				_statusCode = 502;
-				_url = getErrorPage();
-			}
-			else
-			{
-				_body_size = file.fLength;
-				_contentType = file.fExtension;
-			}
-			std::cout << B_CYAN"BODY_SIZE: "NORM << _body_size << std::endl; // TODO: удалить
+			/** заполняет необходимые данные и запускает CGI */
+			CollectDataForResponse(file);
 		}
 	}
 	else
@@ -71,21 +39,25 @@ Response::Response(Request &request) :
 	_inProc = false;
 }
 
-Response::~Response() {}
+Response::~Response()
+{
+	if (_cgi_ptr != nullptr)
+		delete _cgi_ptr;
+}
 
 char *Response::makeBody(int &readSize)
 {
-	if (_inProc || _cgiPtr)
+	if (_inProc || _cgi_ptr)
 	{
 		if (_url != "ERROR" && !_autoindex)
 		{
 			_body = new char[SEND_BUFFER_SIZE];
 			memset(_body, 0, SEND_BUFFER_SIZE);
-			if (_cgiPtr && _cgiPtr->isReadable())
+			if (_cgi_ptr && _cgi_ptr->isReadable())
 			{
-				readSize = read(_cgiFd[0], _body, SEND_BUFFER_SIZE);
+				readSize = read(_cgi_fds[0], _body, SEND_BUFFER_SIZE);
 				if (readSize == 0 || readSize == -1)
-					_cgiPtr->toRead(false);
+					_cgi_ptr->toRead(false);
 			}
 			else
 			{
@@ -97,12 +69,12 @@ char *Response::makeBody(int &readSize)
 		}
 		else if (_autoindex)
 		{
-			_body = gen_def_page(_statusCode, _body_size, _url.c_str(), _reqLocation);
+			_body = gen_def_page(_status_code, _body_size, _url.c_str(), _reqLocation);
 			readSize = _body_size;
 		}
 		else
 		{
-			_body = gen_def_page(_statusCode, _body_size, nullptr, _reqLocation);
+			_body = gen_def_page(_status_code, _body_size, nullptr, _reqLocation);
 			readSize = _body_size;
 		}
 	}
@@ -110,18 +82,18 @@ char *Response::makeBody(int &readSize)
 }
 
 
-std::string Response::makeHeaders()
+const std::string &Response::MakeHeaders()
 {
 	const std::time_t current_time = std::time(0);
 	_headers += "Server: HTTP/1.1" + std::string(CRLF);
 	_headers += "Date: " + std::string(ctime(&current_time));
-	if (_statusCode == 301)
+	if (_status_code == 301)
 		_headers += "Location: " + _url + std::string(CRLF);
 	if (_method == "PUT" || _method == "DELETE")
 		_headers += "Content-Location: " + _url + std::string(CRLF);
-	if (_statusCode < 300 || _statusCode > 399)
+	if (_status_code < 300 || _status_code > 399)
 	{
-		_headers += "Content-Type: " + _contentType + std::string(CRLF);
+		_headers += "Content-Type: " + _content_type + std::string(CRLF);
 		_headers += "Accept-Ranges: bytes" + std::string(CRLF);
 	}
 	_headers += "Set-Cookie: lastsess=" + std::string(ctime(&current_time));
@@ -134,10 +106,10 @@ std::string Response::makeHeaders()
 	return(_headers);
 }
 
-std::string Response::makeStatusLine()
+const std::string &Response::MakeStatusLine()
 {
-	_statusLine = "HTTP/1.1 " + ft_itoa(_statusCode) + " " + error_map()[_statusCode] + CRLF;
-	return (_statusLine);
+	_status_line = "HTTP/1.1 " + ft_itoa(_status_code) + " " + error_map()[_status_code] + CRLF;
+	return (_status_line);
 }
 
 void Response::SendResponse(int client_fd)
@@ -150,19 +122,19 @@ void Response::SendResponse(int client_fd)
 //	std::cout << BLUE"Autoindex: "NORM << (_autoindex ? "on" : "off") << std::endl;
 //	std::cout << PURPLE"============================================================"NORM << std::endl;
 
-	if (_inProc == false && (!_cgiPtr || _cgiPtr->isReadable()))
+	if (_inProc == false && (!_cgi_ptr || _cgi_ptr->isReadable()))
 	{
-		_response.append(makeStatusLine());
-		_response.append(makeHeaders());
+		_response.append(MakeStatusLine());
+		_response.append(MakeHeaders());
 		_leftBytes = _body_size;
 		res = send(client_fd, _response.c_str(), _response.length(), 0);
 		if (res == -1)
 			throw RequestException("Sending data error");
 //		std::cout << "\n\n" << _response << std::endl << std::endl;
-		_response = std::string(); // TODO: изменить обнуление строки
+		_response = ""; // TODO: изменить обнуление строки
 		_inProc = true;
 	}
-	else if (_FILE.is_open() || _statusCode != 200 || _autoindex || _cgiPtr->isReadable())
+	else if (_FILE.is_open() || _status_code != 200 || _autoindex || _cgi_ptr->isReadable())
 	{
 		int to_send, pos, tries;
 		res = 0, pos = 0, tries = 0;
@@ -171,8 +143,8 @@ void Response::SendResponse(int client_fd)
 		{
 			while (pos != to_send)
 			{
-				if (_cgiPtr && !_cgiPtr->isReadable())
-					res = write(_cgiFd[1], &(_body[pos]), to_send);
+				if (_cgi_ptr && !_cgi_ptr->isReadable())
+					res = write(_cgi_fds[1], &(_body[pos]), to_send);
 				else
 					res = send(client_fd, &(_body[pos]) , to_send, 0);
 				pos += res;
@@ -186,13 +158,13 @@ void Response::SendResponse(int client_fd)
 		}
 		catch(const std::exception& e)
 		{
-			if (_cgiPtr)
+			if (_cgi_ptr)
 			{
-				delete _cgiPtr;
-				_cgiPtr = nullptr;
+				delete _cgi_ptr;
+				_cgi_ptr = nullptr;
 				waitpid(_pid, 0, WNOHANG);
 			}
-			_statusCode = 502;
+			_status_code = 502;
 			_leftBytes = 1;
 			_inProc = false;
 			_url = "ERROR";
@@ -201,38 +173,38 @@ void Response::SendResponse(int client_fd)
 		delete [] _body;
 		_body = nullptr;
 	}
-	if (_leftBytes < 1 && !_cgiPtr)
+	if (_leftBytes < 1 && !_cgi_ptr)
 	{
 		_inProc = false;
 		_leftBytes = false;
-		if (_cgiPtr)
-			delete _cgiPtr;
-		_cgiPtr = nullptr;
+		if (_cgi_ptr)
+			delete _cgi_ptr;
+		_cgi_ptr = nullptr;
 	}
-	else if (_leftBytes < 1 && _cgiPtr)
+	else if (_leftBytes < 1 && _cgi_ptr)
 	{
-		if (!_cgiPtr->isReadable())
+		if (!_cgi_ptr->isReadable())
 		{
-			close(_cgiFd[1]);
+			close(_cgi_fds[1]);
 			waitpid(_pid, 0, 0);
-			_body_size = getFdLen(_cgiFd[0]);
+			_body_size = getFdLen(_cgi_fds[0]);
 			_leftBytes = _body_size;
 			if (_leftBytes == -1)
 			{
-				_statusCode = 500;
-				delete _cgiPtr;
-				_cgiPtr = nullptr;
+				_status_code = 500;
+				delete _cgi_ptr;
+				_cgi_ptr = nullptr;
 				_inProc = false;
-				close(_cgiFd[0]);
+				close(_cgi_fds[0]);
 			}
 			else
-				_cgiPtr->toRead(true);
+				_cgi_ptr->toRead(true);
 		}
 		else
 		{
-			close(_cgiFd[0]);
-			delete _cgiPtr;
-			_cgiPtr = nullptr;
+			close(_cgi_fds[0]);
+			delete _cgi_ptr;
+			_cgi_ptr = nullptr;
 			_inProc = false;
 		}
 	}
@@ -255,23 +227,23 @@ std::string Response::getErrorPage()
 
 	for (std::map<int, std::string>::iterator i = _errorPages.begin(); i != _errorPages.end(); i++)
 	{
-		if (i->first == static_cast<int>(_statusCode))
+		if (i->first == static_cast<int>(_status_code))
 		{
 			t_fileInfo file;
-			urlInfo(i->second, &file, _FILE);
+			FillFileInfo(i->second, &file, _FILE);
 			if (file.fStatus == 200)
 			{
 				_body_size = file.fLength;
-				_contentType = file.fExtension;
+				_content_type = file.fExtension;
 				return i->second;
 			}
 		}
 	}
 	if (_autoindex)
-		def_page = (gen_def_page(_statusCode, _body_size, _url.c_str(), _reqLocation));
+		def_page = (gen_def_page(_status_code, _body_size, _url.c_str(), _reqLocation));
 	else
 	{
-		def_page = (gen_def_page(_statusCode, _body_size, nullptr, _reqLocation));
+		def_page = (gen_def_page(_status_code, _body_size, nullptr, _reqLocation));
 		_url = "ERROR";
 	}
 

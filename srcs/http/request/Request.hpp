@@ -35,9 +35,9 @@ class Request
 		/**
 		* RESPONSE_DATA PART
 		*/
-		const std::string							&GetBody(void); // putDelete()
-		const LocationData							*GetLocation() const; // Response(), putDelete(), CGI()
-		const std::string							GetUrl(std::uint32_t &status_code); // CGI() && PutDelete
+		const std::string							&GetBody(void); // Response::GetFilePath()
+		const LocationData							*GetLocation() const; // Response(), Response::GetFilePath(), CGI()
+		const std::string							GetUrl(std::uint32_t &status_code); // CGI(), Response::GetFilePath()
 		const std::string							&GetMethod(void) const;  // Response()
 		const std::map<std::string, std::string>	&GetHeaders(void) const; // Response()
 		const std::uint32_t							&GetStatusCode(void) const; // Response()

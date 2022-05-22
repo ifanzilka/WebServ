@@ -19,7 +19,6 @@ class Request;
 */
 
 off_t getFdLen(int fd);
-int  checkCgi(const std::multimap<std::string, std::string> &CGI, std::string fPath);
 
 /**
 * RESPONSE_DATA PART
@@ -32,9 +31,7 @@ std::string					ft_itoa(int x);
 char						*gen_def_page(uint32_t &statusCode, uint64_t &bodySize, const char *path, const LocationData *location);
 std::string					strUpper(const std::string &str);
 std::string					getExtension(std::string fPath);
-bool						urlInfo(std::string fPath, t_fileInfo *fStruct, std::ifstream &FILE);
 std::uint8_t				GetTypeOfData(const std::string &path);
-std::string					putDelete(Request &request, uint32_t &statusCode);
 
 /**
 * SAVE_REQUEST_DATA PART
