@@ -34,7 +34,7 @@ void Messenger::ReadRequest(const int &client_fd)
 		_request.ReadRequestData(read_bytes);
 		_request.PrintAllRequestData(); // TODO: вывод статистики парсинга
 	}
-	catch (RequestException &e)
+	catch (const RequestException &e)
 	{
 		_request.SetStatusCode(e.getStatus());
 		std::cout << e.what() << std::endl;
@@ -55,7 +55,7 @@ void Messenger::MakeResponse()
 			_response = nullptr;
 		}
 	}
-	catch(const std::exception& e)
+	catch (const RequestException &e)
 	{
 		std::cerr << e.what() << std::endl;
 	}

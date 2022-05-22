@@ -23,18 +23,21 @@ class Request
 		Request(std::multimap<std::string, LocationData> &locations, ServerKqueue &server_api);
 		~Request();
 
+		void	ReadRequestData(const size_t &data_size);
+		void	PrintAllRequestData(void);
+
 		/**
 		* CGI PART
 		*/
 		std::string	GetURIParameters(void); // CGI()
-		void		getUrlEncodedBody(std::map<std::string, std::string> &queryBody); // CGI()
+		void		GetUrlEncodedBody(std::map<std::string, std::string> &query_body); // CGI()
 
 		/**
 		* RESPONSE_DATA PART
 		*/
 		const std::string							&GetBody(void); // putDelete()
 		const LocationData							*GetLocation() const; // Response(), putDelete(), CGI()
-		std::string									getUrl(std::uint32_t &status); // CGI() && PutDelete
+		const std::string							GetUrl(std::uint32_t &status_code); // CGI() && PutDelete
 		const std::string							&GetMethod(void) const;  // Response()
 		const std::map<std::string, std::string>	&GetHeaders(void) const; // Response()
 		const std::uint32_t							&GetStatusCode(void) const; // Response()
@@ -44,23 +47,36 @@ class Request
 		 * functions for Messenger::ReadRequest()
 		 */
 		void	SetClientFd(const std::uint8_t &fd);
-		void	PrintAllRequestData();
 		void	SetStatusCode(const std::uint32_t &status_code);
 		char	*GetBuffer(void) const;
-		void	ReadRequestData(size_t data_size);
-
 	private:
-		/**
-		* SAVE_REQUEST_DATA PART
-		*/
-		std::string	validateUrl(std::string &fullPath, std::uint32_t &status, std::uint8_t mode);
 
-		void	saveSimpleBody(std::string &data);
-		void	parseChunkedBody(std::string &data);
-		void	parseChunkSize(std::string &data);
-		void	saveChunkedBody(std::string &data);
-		void	saveHeaderLine(std::string headerLine);
+		void	ClearRequestData(void);
+		/** вспомогательный метод для GetUrl() */
+		std::string	ValidateUrl(std::string &full_path, std::uint32_t &status_code, std::uint8_t mode);
 
+/**
+ * ====================================
+ * ==          Saving body           ==
+ * ====================================
+ */
+
+		void	SaveCommonBody(std::string &req_data);
+		void	ParseChunkedBody(std::string &req_data);
+		void	TryToFindChunk(std::string &req_data);
+		void	SaveChunkedBody(std::string &req_data);
+
+/**
+ * ====================================
+ * == Saving first line and headers  ==
+ * ====================================
+ */
+
+		/** SAVING HEADERS */
+		bool	CheckHeaderLineState(std::string &header_line);
+		void	SaveHeaderLine(std::string req_data);
+
+		/** SAVING AND PARSING FIRST LINE OF REQUEST */
 		void	ParsePercentData(std::string &uri_ref);
 		void	ParseURIData(void);
 		const 	LocationData	*GetValidLocation(void);
@@ -70,8 +86,11 @@ class Request
 		void	ReadStartLine(std::string fst_line);
 		void	ReadFirstBlock(std::string &req_data); /** чтение первой строки и заголовков */
 
-		void	resetRequest(void);
-
+/**
+ * ====================================
+ * ==            Variables           ==
+ * ====================================
+ */
 		std::uint8_t									_client_fd;
 		ServerKqueue									&_server_api;
 		std::multimap<std::string, LocationData> const	&_allLocations;
@@ -81,19 +100,18 @@ class Request
 		/*
 		 * SAVE_REQUEST_DATA PART
 		 */
-		std::string							_body;
-		std::uint32_t						_chunkSize; // размер пересылаемых данных
-		bool								_hasChunk; // saveChunkedBody()
-		std::uint32_t						_bodySize;
-		std::string							_transferEncoding;
-		std::map<std::string, std::string>	_headers; // ключ:значение
+		std::string							_uri;
 		std::string							_uri_parameters; // строка запроса после '?'
-		std::uint32_t						_maxBodySize;
-		std::uint8_t						_parseState;
-		std::string							_tmpBuffer;
 		std::string							_method;
 		std::string							_protocol;
-		std::string							_uri;
+		std::map<std::string, std::string>	_headers; // ключ:значение
+		std::string							_body;
+		std::uint32_t						_body_size;
+		std::uint32_t						_max_body_size;
+		bool								_isChunkedData; // SaveChunkedBody()
+		std::uint32_t						_chunk_size; // размер пересылаемых данных
+		std::string							_transfer_encoding;
+		std::uint8_t						_parse_state;
 		std::uint32_t						_status_code;
 };
 

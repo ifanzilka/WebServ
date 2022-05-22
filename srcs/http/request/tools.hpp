@@ -6,7 +6,7 @@
 #include <sys/stat.h> // 'stat' struct
 #include <dirent.h>
 
-/** FOR IsDirOrFile */
+/** FOR GetTypeOfData */
 #define NOT_FOUND		0
 #define FILE_MODE		1
 #define DIR_MODE		2
@@ -33,7 +33,7 @@ char						*gen_def_page(uint32_t &statusCode, uint64_t &bodySize, const char *pa
 std::string					strUpper(const std::string &str);
 std::string					getExtension(std::string fPath);
 bool						urlInfo(std::string fPath, t_fileInfo *fStruct, std::ifstream &FILE);
-std::uint8_t				isDirOrFile(std::string &path);
+std::uint8_t				GetTypeOfData(const std::string &path);
 std::string					putDelete(Request &request, uint32_t &statusCode);
 
 /**

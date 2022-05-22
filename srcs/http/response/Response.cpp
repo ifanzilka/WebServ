@@ -15,7 +15,7 @@ Response::Response(Request &request) :
 	_contentType = "text/html";
 	if ((_statusCode = request.GetStatusCode()) == 0)
 	{
-		_bodySize = 0;
+		_body_size = 0;
 		_reqHeaders = request.GetHeaders();
 		_method = request.GetMethod();
 		_url = putDelete(request, _statusCode);
@@ -49,9 +49,9 @@ Response::Response(Request &request) :
 					std::cerr << e.what() << " due to " << strerror(errno) << std::endl;
 					_statusCode = 502;
 				}
-				_bodySize = file.fLength;
+				_body_size = file.fLength;
 				_contentType = file.fExtension;
-				_leftBytes = _bodySize;
+				_leftBytes = _body_size;
 			}
 			else if (cgNum == -1)
 			{
@@ -60,9 +60,10 @@ Response::Response(Request &request) :
 			}
 			else
 			{
-				_bodySize = file.fLength;
+				_body_size = file.fLength;
 				_contentType = file.fExtension;
 			}
+			std::cout << B_CYAN"BODY_SIZE: "NORM << _body_size << std::endl; // TODO: удалить
 		}
 	}
 	else
@@ -96,13 +97,13 @@ char *Response::makeBody(int &readSize)
 		}
 		else if (_autoindex)
 		{
-			_body = gen_def_page(_statusCode, _bodySize, _url.c_str(), _reqLocation);
-			readSize = _bodySize;
+			_body = gen_def_page(_statusCode, _body_size, _url.c_str(), _reqLocation);
+			readSize = _body_size;
 		}
 		else
 		{
-			_body = gen_def_page(_statusCode, _bodySize, nullptr, _reqLocation);
-			readSize = _bodySize;
+			_body = gen_def_page(_statusCode, _body_size, nullptr, _reqLocation);
+			readSize = _body_size;
 		}
 	}
 	return (_body);
@@ -124,7 +125,7 @@ std::string Response::makeHeaders()
 		_headers += "Accept-Ranges: bytes" + std::string(CRLF);
 	}
 	_headers += "Set-Cookie: lastsess=" + std::string(ctime(&current_time));
-	_headers += "Content-Length: " + ft_itoa(_bodySize) + std::string(CRLF);
+	_headers += "Content-Length: " + ft_itoa(_body_size) + std::string(CRLF);
 	if (_reqHeaders["Connection"].size())
 		_headers += "Connection: " + _reqHeaders["Connection"] + std::string(CRLF);
 	else
@@ -153,7 +154,7 @@ void Response::SendResponse(int client_fd)
 	{
 		_response.append(makeStatusLine());
 		_response.append(makeHeaders());
-		_leftBytes = _bodySize;
+		_leftBytes = _body_size;
 		res = send(client_fd, _response.c_str(), _response.length(), 0);
 		if (res == -1)
 			throw RequestException("Sending data error");
@@ -198,6 +199,7 @@ void Response::SendResponse(int client_fd)
 			std::cerr << e.what() << '\n';
 		}
 		delete [] _body;
+		_body = nullptr;
 	}
 	if (_leftBytes < 1 && !_cgiPtr)
 	{
@@ -213,8 +215,8 @@ void Response::SendResponse(int client_fd)
 		{
 			close(_cgiFd[1]);
 			waitpid(_pid, 0, 0);
-			_bodySize = getFdLen(_cgiFd[0]);
-			_leftBytes = _bodySize;
+			_body_size = getFdLen(_cgiFd[0]);
+			_leftBytes = _body_size;
 			if (_leftBytes == -1)
 			{
 				_statusCode = 500;
@@ -259,17 +261,17 @@ std::string Response::getErrorPage()
 			urlInfo(i->second, &file, _FILE);
 			if (file.fStatus == 200)
 			{
-				_bodySize = file.fLength;
+				_body_size = file.fLength;
 				_contentType = file.fExtension;
 				return i->second;
 			}
 		}
 	}
 	if (_autoindex)
-		def_page = (gen_def_page(_statusCode, _bodySize, _url.c_str(), _reqLocation));
+		def_page = (gen_def_page(_statusCode, _body_size, _url.c_str(), _reqLocation));
 	else
 	{
-		def_page = (gen_def_page(_statusCode, _bodySize, nullptr, _reqLocation));
+		def_page = (gen_def_page(_statusCode, _body_size, nullptr, _reqLocation));
 		_url = "ERROR";
 	}
 

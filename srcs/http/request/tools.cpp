@@ -250,22 +250,22 @@ bool	urlInfo(std::string fPath, t_fileInfo *fStruct, std::ifstream &FILE)
 	return (true); // TODO: удалить
 }
 
-std::uint8_t	isDirOrFile(std::string &path)
+std::uint8_t	GetTypeOfData(const std::string &path)
 {
 	struct stat	s;
 
 	if (stat(path.c_str(), &s) == -1)
-		return NOT_FOUND;
+		return (NOT_FOUND);
 	if (s.st_mode & S_IFDIR)
-		return DIR_MODE;
+		return (DIR_MODE);
 	if (s.st_mode & S_IFREG)
-		return FILE_MODE;
-	return UNKNOWN_MODE;
+		return (FILE_MODE);
+	return (UNKNOWN_MODE);
 }
 
 std::string putDelete(Request &request, uint32_t &statusCode)
 {
-	std::string _url = request.getUrl(statusCode);
+	std::string _url = request.GetUrl(statusCode);
 
 	if (statusCode == 1) // если автоиндекс
 		return (_url);

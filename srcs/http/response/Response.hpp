@@ -51,7 +51,7 @@ class Response
 		std::string							_url;
 		std::string							_method;
 		std::map <std::string, std::string>	_reqHeaders;
-		std::uint64_t						_bodySize;
+		std::uint64_t						_body_size;
 		uint32_t							_statusCode;
 		std::string							_contentType;
 		std::map<int, std::string>			_errorPages;

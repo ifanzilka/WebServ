@@ -12,9 +12,9 @@ CGI::CGI(Request &request, const std::multimap<std::string, std::string> &cgis,
 
 	_toRead = false;
 	status = 200;
-	_url = _request.getUrl(status);
+	_url = _request.GetUrl(status);
 	_reqHeaders = _request.GetHeaders();
-	request.getUrlEncodedBody(_reqHeaders); //TODO: проверить внимательно (ссылку инициализируется значения)
+	request.GetUrlEncodedBody(_reqHeaders); //TODO: проверить внимательно (ссылку инициализируется значения)
 
 	_reqHeaders.insert(std::pair<std::string, std::string>("QUERY_STRING",
 		_request.GetURIParameters()));

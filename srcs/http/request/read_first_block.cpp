@@ -5,24 +5,23 @@
  */
 void Request::ReadFirstBlock(std::string &data)
 {
-	std::size_t	newLinePos;
+	std::size_t	EOL;
 
-	newLinePos = data.find(LF);
-	while (newLinePos != std::string::npos &&
-		(_parseState != BODY_LINE && _parseState != END_STATE))
+	EOL = data.find(LF);
+	while (EOL != std::string::npos &&
+		(_parse_state != BODY_LINE && _parse_state != END_STATE))
 	{
-		if (_parseState == START_LINE)
+		if (_parse_state == START_LINE)
 		{
-			ReadStartLine(data.substr(0, newLinePos));
-			data.erase(0, newLinePos + 1);
+			ReadStartLine(data.substr(0, EOL));
 		}
-		if (_parseState == HEADER_LINE)
+		else if (_parse_state == HEADER_LINE)
 		{
-			newLinePos = data.find(LF);
-			saveHeaderLine(data.substr(0, newLinePos));
-			data.erase(0, newLinePos + 1);
+			EOL = data.find(LF);
+			SaveHeaderLine(data.substr(0, EOL));
 		}
-		newLinePos = data.find(LF);
+		data.erase(0, EOL + 1);
+		EOL = data.find(LF);
 	}
 }
 
@@ -45,15 +44,15 @@ void	Request::ReadStartLine(std::string fst_line)
 	if (!_location)
 		throw RequestException(404, "Not Found");
 	//TODO: сделать проверку доступных протоколов (405, "Method Not Allowed")
-	_maxBodySize = _location->GetClientBufferBodySize();
+	_max_body_size = _location->GetClientBufferBodySize();
 
 	ParseURIData();
 
-	_parseState = HEADER_LINE;
+	_parse_state = HEADER_LINE;
 }
 
 /**
- *
+ * 3)
  * */
 void	Request::SaveMethod(std::string &fst_line, std::size_t &space_ind)
 {
@@ -70,7 +69,7 @@ void	Request::SaveMethod(std::string &fst_line, std::size_t &space_ind)
 }
 
 /**
- *
+ * 4)
  * */
 void	Request::SaveURI(std::string &fst_line, std::size_t &space_ind)
 {
@@ -87,7 +86,7 @@ void	Request::SaveURI(std::string &fst_line, std::size_t &space_ind)
 }
 
 /**
- *
+ * 5)
  * */
 void	Request::SaveProtocol(std::string &fst_line, std::size_t &space_ind)
 {
@@ -101,7 +100,52 @@ void	Request::SaveProtocol(std::string &fst_line, std::size_t &space_ind)
 }
 
 /**
- *
+ * 6)
+ * */
+const LocationData	*Request::GetValidLocation(void)
+{
+	std::string	tmp;
+	std::string	tmp1;
+	std::size_t	lastSlashPos;
+	std::size_t	len;
+	bool		isLastSlash;
+
+	isLastSlash = false;
+	if (_uri[_uri.length() - 1] != '/')
+	{
+		isLastSlash = true;
+		_uri.push_back('/');
+	}
+	lastSlashPos = _uri.find_last_of("/");
+	if (lastSlashPos == std::string::npos)
+		throw RequestException(400, "Bad Request");
+
+	tmp = _uri.substr(0, lastSlashPos);
+	len = std::count(_uri.begin(), _uri.end(), '/');
+	for (std::size_t i = 0; i < len; i++)
+	{
+		std::multimap<std::string, LocationData>::const_iterator it = _allLocations.begin();
+		for (; it != _allLocations.end(); it++)
+		{
+			if (!tmp.length())
+				tmp = "/";
+			(it->first != "/" && it->first[it->first.length() - 1] == '/') ?
+				tmp1 = it->first.substr(0, it->first.find_last_of("/")) : tmp1 = it->first;
+			if (tmp == tmp1)
+			{
+				if (isLastSlash)
+					_uri.pop_back();
+				return (&it->second);
+			}
+		}
+		lastSlashPos = tmp.find_last_of("/", lastSlashPos);
+		tmp = tmp.substr(0, lastSlashPos);
+	}
+	return (nullptr);
+}
+
+/**
+ * 7)
  * */
 void	Request::ParseURIData(void)
 {
@@ -117,7 +161,7 @@ void	Request::ParseURIData(void)
 }
 
 /**
- *
+ * 8)
  * */
 void	Request::ParsePercentData(std::string &uri_ref)
 {
@@ -147,4 +191,50 @@ void	Request::ParsePercentData(std::string &uri_ref)
 		else if (uri_ref[i] == '+')
 			uri_ref = uri_ref.substr(0, i) + " " + uri_ref.substr(i + 1);
 	}
+}
+
+/**
+ * 9)
+ * */
+void	Request::SaveHeaderLine(std::string req_data)
+{
+	std::size_t	colon_pos;
+	std::string	key;
+	std::string	value;
+
+	if (!CheckHeaderLineState(req_data))
+		return ;
+
+	colon_pos = req_data.find(":");
+	if (colon_pos == std::string::npos)
+		throw RequestException(400, "Bad Request");
+	key = req_data.substr(0, colon_pos);
+	value = req_data.substr(colon_pos + 1);
+	_headers.insert(std::pair<std::string, std::string>(key, value));
+	if (key == "Content-Length") // получение размера тела
+		_body_size = static_cast<std::uint32_t>(std::atol(value.c_str()));
+	if (key == "Transfer-Encoding")
+		_transfer_encoding = value; // получение типа кодирования
+}
+
+/**
+ * 10)
+ * */
+bool	Request::CheckHeaderLineState(std::string &req_data)
+{
+	req_data.erase(std::remove_if(req_data.begin(),
+		req_data.end(), &isCharWhiteSpace), req_data.end()); // удаление пробелов
+	if (!req_data.length())
+	{
+		if (_headers.find("Host") == std::end(_headers)) // если нет "HOST"
+			throw RequestException(400, "Bad Request");
+		// если нет "Transfer-Encoding || Content-Length"
+		if (_headers.find("Transfer-Encoding") == std::end(_headers)
+			&& _headers.find("Content-Length") == std::end(_headers))
+			_parse_state = END_STATE;
+		else // иначе при наличии
+			_parse_state = BODY_LINE;
+		return (false);
+	}
+	return (true);
 }
