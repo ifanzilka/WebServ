@@ -19,27 +19,30 @@ class Response
 		Response(Request &request);
 		~Response();
 		void	SendResponse(int client_fd);
-		bool	isSent() { return (!_leftBytes); }
+		bool	isSent() { return (!_left_bytes); }
 
 	private:
 
-	/**
-	* CONSTRUCTOR PART
-	*/
+	/** Initialization part (constructor) */
+
 		uint16_t 	CGI_Amount(const std::multimap<std::string, std::string> &CGI, const std::string &file_path);
 		void		CollectDataForResponse(const t_fileInfo &file);
 		void		FillFileInfo(const std::string &file_path, t_fileInfo *const file_t, std::ifstream &FILE);
 		std::string	MakeFilePath(Request &request, uint32_t &status_code);
 		void 		CollectStartData(void);
 
+	/** SendResponse part */
 
-
-
-		char				*makeBody(int &readSize);
-		const std::string	&MakeHeaders();
+		void				CloseCGI(void);
+		void				SendBody(const int &client_fd, int &read_size, int &read_bytes);
+		char				*MakeBody(int &readSize);
+		const std::string	&MakeHeadersBlock();
 		const std::string	&MakeStatusLine();
-		std::string			getErrorPage();
-		void				setErrorPages();
+
+	/** Utils */
+
+		const std::string	&GetErrorPage();
+		void				SetErrorPages();
 
 
 /**
@@ -54,12 +57,12 @@ class Response
 		const int							*_cgi_fds;
 
 		/** Class' variables */
-		std::map<std::string, std::string>	_reqHeaders;
-		std::map<int, std::string>			_errorPages;
-		const LocationData					*_reqLocation;
+		std::map<std::string, std::string>	_req_headers;
+		std::map<int, std::string>			_error_pages;
+		const LocationData					*_req_location;
 		Request								&_request;
 		std::ifstream						_FILE;
-		std::uint64_t						_leftBytes; // для проверки вся ли информация записалась
+		std::uint64_t						_left_bytes; // для проверки вся ли информация записалась
 		std::uint64_t						_body_size;
 		std::uint32_t						_status_code;
 		std::string							_headers;

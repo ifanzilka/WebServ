@@ -6,10 +6,10 @@
 void Response::CollectStartData(void)
 {
 	_body_size = 0;
-	_reqHeaders = _request.GetHeaders();
+	_req_headers = _request.GetHeaders();
 	_method = _request.GetMethod();
 	_url = MakeFilePath(_request, _status_code);
-	_reqLocation = _request.GetLocation();
+	_req_location = _request.GetLocation();
 	_autoindex = _status_code == 1;
 }
 
@@ -110,13 +110,13 @@ void Response::CollectDataForResponse(const t_fileInfo &file)
 			_status_code = 502;
 		}
 		_body_size = file.fLength;
-		_leftBytes = file.fLength;
+		_left_bytes = file.fLength;
 		_content_type = file.fExtension;
 	}
 	else if (cgi_amnt == -1)
 	{
 		_status_code = 502;
-		_url = getErrorPage();
+		_url = GetErrorPage();
 	}
 	else
 	{
